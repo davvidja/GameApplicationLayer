@@ -17,24 +17,14 @@ public protocol GAClientDelegate {
     func didReceiveGamePause()
 }
 
-public class GAClient: NSObject, NSStreamDelegate, MCSessionDelegate, MCBrowserViewControllerDelegate {
+public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDelegate {
     
     var myPeerID, nearbyPeerID: MCPeerID?
-    var session: MCSession?
+    var session: GASession?
     var adverstiserAssistant: MCAdvertiserAssistant?
     var peersBrowser: MCBrowserViewController?
-    var inputStream: NSInputStream?
-    var outputStream: NSOutputStream?
-    var outputStreamStarted, inputStreamReceived: Bool
-    var outputStreamOpenCompleted, inputStreamOpenCompleted: Bool
     public var delegate: GAServerDelegate?
     
-    public override init(){
-        outputStreamStarted = false
-        inputStreamReceived = false
-        outputStreamOpenCompleted = false
-        inputStreamOpenCompleted = false
-    }
     
     public func initGameClient (myPlayerName: String!, serviceType: String = "FreeBall", withAssistant: Bool = true) {
         if (myPeerID == nil){
@@ -42,12 +32,12 @@ public class GAClient: NSObject, NSStreamDelegate, MCSessionDelegate, MCBrowserV
         }
         
         if (session == nil){
-            session = MCSession(peer: myPeerID)
+            session = GASession(peer: myPeerID!)
             session!.delegate = self
         }
         
         if(peersBrowser == nil){
-            peersBrowser = MCBrowserViewController(serviceType: serviceType, session: session)
+            peersBrowser = MCBrowserViewController(serviceType: serviceType, session: session!.session)
             peersBrowser!.delegate = self
         }
     }
@@ -57,7 +47,7 @@ public class GAClient: NSObject, NSStreamDelegate, MCSessionDelegate, MCBrowserV
     }
     
     public func stopGameClient () {
-
+        session!.disconnect()
     }
     
 
@@ -78,62 +68,13 @@ public class GAClient: NSObject, NSStreamDelegate, MCSessionDelegate, MCBrowserV
     public func browserViewController(browserViewController: MCBrowserViewController!, shouldPresentNearbyPeer peerID: MCPeerID!, withDiscoveryInfo info: [NSObject : AnyObject]!) ->Bool{
         return true
     }
+    
+    
+    //Methods of the GASessionDelegate protocol
+    func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState){
+        println("ViewController> Player \(peerPlayer) change estate to \(newState)")
+        
+        delegate!.player(peerPlayer: peerPlayer, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateConnected)
+    }
 
-    
-    
-    //** Methods of the MCSessionDelegate protocol **//
-    
-    // Remote peer changed state
-    public func session(session: MCSession!, peer peerID: MCPeerID!, didChangeState state: MCSessionState) {
-        println("Peer /(peerID.displayName) has changed state to /(state)")
-        
-        switch state {
-            
-        case MCSessionState.Connected:
-            //Once we are noticed that a peer has been connected to the session we proced with the start of the output stream
-            
-            var error: NSError?
-            
-            nearbyPeerID = peerID
-            
-            self.outputStream = session.startStreamWithName(peerID.displayName, toPeer: peerID, error: &error)
-            
-            if (error != nil){
-                println("An Error Occurred while outputStream start: \(error!)")
-                outputStreamStarted = false
-            } else {
-                outputStreamStarted = true
-            }
-            break
-            
-        case MCSessionState.Connecting:
-            break
-            
-        case MCSessionState.NotConnected:
-            break
-            
-        default:
-            println("undefined state")
-        }
-    }
-    
-    // Received data from remote peer
-    public func session(session: MCSession!, didReceiveData data: NSData!, fromPeer peerID: MCPeerID!){
-        
-    }
-    
-    // Received a byte stream from remote peer
-    public func session(session: MCSession!, didReceiveStream stream: NSInputStream!, withName streamName: String!, fromPeer peerID: MCPeerID!){
-        
-    }
-    
-    // Start receiving a resource from remote peer
-    public func session(session: MCSession!, didStartReceivingResourceWithName resourceName: String!, fromPeer peerID: MCPeerID!, withProgress progress: NSProgress!){
-        
-    }
-    
-    // Finished receiving a resource from remote peer and saved the content in a temporary location - the app is responsible for moving the file to a permanent location within its sandbox
-    public func session(session: MCSession!, didFinishReceivingResourceWithName resourceName: String!, fromPeer peerID: MCPeerID!, atURL localURL: NSURL!, withError error: NSError!){
-        
-    }
 }
