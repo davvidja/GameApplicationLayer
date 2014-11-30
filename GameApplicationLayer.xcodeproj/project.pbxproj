@@ -10,6 +10,9 @@
 		9250E1EE1A29E3AD006B70D8 /* GameApplicationLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 9250E1ED1A29E3AD006B70D8 /* GameApplicationLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9250E1F41A29E3AE006B70D8 /* GameApplicationLayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9250E1E81A29E3AD006B70D8 /* GameApplicationLayer.framework */; };
 		9250E1FB1A29E3AE006B70D8 /* GameApplicationLayerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9250E1FA1A29E3AE006B70D8 /* GameApplicationLayerTests.swift */; };
+		9250E2101A29E7EB006B70D8 /* GAServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9250E20F1A29E7EB006B70D8 /* GAServer.swift */; };
+		9250E2161A2A5F15006B70D8 /* GAClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9250E2151A2A5F15006B70D8 /* GAClient.swift */; };
+		9250E21A1A2A62BD006B70D8 /* GACommonStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9250E2191A2A62BD006B70D8 /* GACommonStructures.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +32,9 @@
 		9250E1F31A29E3AE006B70D8 /* GameApplicationLayerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GameApplicationLayerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9250E1F91A29E3AE006B70D8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9250E1FA1A29E3AE006B70D8 /* GameApplicationLayerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameApplicationLayerTests.swift; sourceTree = "<group>"; };
+		9250E20F1A29E7EB006B70D8 /* GAServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GAServer.swift; sourceTree = "<group>"; };
+		9250E2151A2A5F15006B70D8 /* GAClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GAClient.swift; sourceTree = "<group>"; };
+		9250E2191A2A62BD006B70D8 /* GACommonStructures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GACommonStructures.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +78,9 @@
 			isa = PBXGroup;
 			children = (
 				9250E1ED1A29E3AD006B70D8 /* GameApplicationLayer.h */,
+				9250E20F1A29E7EB006B70D8 /* GAServer.swift */,
+				9250E2151A2A5F15006B70D8 /* GAClient.swift */,
+				9250E2191A2A62BD006B70D8 /* GACommonStructures.swift */,
 				9250E1EB1A29E3AD006B70D8 /* Supporting Files */,
 			);
 			path = GameApplicationLayer;
@@ -209,6 +218,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9250E21A1A2A62BD006B70D8 /* GACommonStructures.swift in Sources */,
+				9250E2161A2A5F15006B70D8 /* GAClient.swift in Sources */,
+				9250E2101A29E7EB006B70D8 /* GAServer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -319,6 +331,7 @@
 		9250E1FF1A29E3AE006B70D8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -328,12 +341,14 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		9250E2001A29E3AE006B70D8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -395,6 +410,7 @@
 				9250E2001A29E3AE006B70D8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		9250E2011A29E3AE006B70D8 /* Build configuration list for PBXNativeTarget "GameApplicationLayerTests" */ = {
 			isa = XCConfigurationList;
@@ -403,6 +419,7 @@
 				9250E2031A29E3AE006B70D8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
