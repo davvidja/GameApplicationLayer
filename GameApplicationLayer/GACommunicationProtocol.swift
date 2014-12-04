@@ -37,10 +37,17 @@ class GACommunicationProtocol {
     var protocolVersion: UInt8 = 1
     let hdrMasks = GAPHeaderMasks ()
     let payloadTypes = GAPpayloadTypes ()
+    var SSRC: UInt32
+    
+    init(){
+        SSRC = UInt32(random())
+    }
     
     //This metod creates the message regarding with the protocolo primitive SENDNODE
-    func sendNode() -> UnsafePointer<UInt8> {
+    func sendNode() -> (UnsafePointer<UInt8>,Int) {
         var msg = GAPHeader()
+        var buffer = UnsafePointer<UInt8>()
+        
         
         var version = self.protocolVersion
         
@@ -55,10 +62,12 @@ class GACommunicationProtocol {
         self.setMarkerBits(1, toByte: &msg.M_PT)
         self.setPayLoadTypeBits(payloadTypes.NODE, toByte: &msg.M_PT)
         
-        var nowTimeStamp = NSDate()
-        nowTimeStamp.
+        self.setTimeStamp(toByte: &msg.timeStamp)
+        self.setSSRC(toByte: &msg.SSRC)
         
-        return nil
+        var aux = NSData(bytes: &msg, length: sizeof(GAPHeader))
+        
+        return (UnsafePointer<UInt8>(aux.bytes), aux.length)
     }
     
     func setVersionBits(versionBits: UInt8, inout toByte byte: UInt8){
@@ -138,10 +147,19 @@ class GACommunicationProtocol {
         dateComponentes19000101.year = 1900
         dateComponentes19000101.month = 1
         dateComponentes19000101.day = 1
+        dateComponentes19000101.hour = 0
+        dateComponentes19000101.minute = 0
+
         
         date19000101 = gregorianCalendar!.dateFromComponents(dateComponentes19000101)
         
-        intervalTimeStamp! = now.timeIntervalSinceDate(date19000101!)
+        intervalTimeStamp = now.timeIntervalSinceDate(date19000101!)
+        
+        byte = UInt32(intervalTimeStamp!)
+    }
+    
+    func setSSRC(inout toByte byte: UInt32){
+        byte = SSRC
     }
 
 
