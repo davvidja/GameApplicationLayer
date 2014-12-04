@@ -22,6 +22,7 @@ public class GAServer: NSObject, GASessionDelegate {
     var myPeerID, nearbyPeerID: MCPeerID?
     var session: GASession?
     var adverstiserAssistant: MCAdvertiserAssistant?
+    var communicationProtocol: GACommunicationProtocol?
 
     public var delegate: GAServerDelegate?
     
@@ -38,6 +39,10 @@ public class GAServer: NSObject, GASessionDelegate {
         if (adverstiserAssistant == nil){
             adverstiserAssistant = MCAdvertiserAssistant(serviceType: serviceType, discoveryInfo: nil, session: session!.session)
         }
+        
+        if (communicationProtocol == nil){
+            communicationProtocol = GACommunicationProtocol()
+        }
     }
     
     public func startGameServer () {
@@ -51,6 +56,7 @@ public class GAServer: NSObject, GASessionDelegate {
     
     //Transmition methods
     public func sendData (buffer: UnsafePointer<UInt8>, maxlength: Int){
+        communicationProtocol!.sendNode()
         session!.writeOutputStream(buffer, maxLength: maxlength)
     }
     
