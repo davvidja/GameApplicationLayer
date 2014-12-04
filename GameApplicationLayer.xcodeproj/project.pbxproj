@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9203E1D01A307F17009ED40F /* GACommunicationProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9203E1CF1A307F17009ED40F /* GACommunicationProtocol.swift */; };
 		921268581A2B2711007DFD1C /* GASession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921268571A2B2711007DFD1C /* GASession.swift */; };
 		9250E1EE1A29E3AD006B70D8 /* GameApplicationLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 9250E1ED1A29E3AD006B70D8 /* GameApplicationLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9250E1F41A29E3AE006B70D8 /* GameApplicationLayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9250E1E81A29E3AD006B70D8 /* GameApplicationLayer.framework */; };
@@ -27,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9203E1CF1A307F17009ED40F /* GACommunicationProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GACommunicationProtocol.swift; sourceTree = "<group>"; };
 		921268571A2B2711007DFD1C /* GASession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GASession.swift; sourceTree = "<group>"; };
 		9250E1E81A29E3AD006B70D8 /* GameApplicationLayer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GameApplicationLayer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9250E1EC1A29E3AD006B70D8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -84,6 +86,7 @@
 				9250E2151A2A5F15006B70D8 /* GAClient.swift */,
 				921268571A2B2711007DFD1C /* GASession.swift */,
 				9250E2191A2A62BD006B70D8 /* GACommonStructures.swift */,
+				9203E1CF1A307F17009ED40F /* GACommunicationProtocol.swift */,
 				9250E1EB1A29E3AD006B70D8 /* Supporting Files */,
 			);
 			path = GameApplicationLayer;
@@ -221,6 +224,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9203E1D01A307F17009ED40F /* GACommunicationProtocol.swift in Sources */,
 				9250E21A1A2A62BD006B70D8 /* GACommonStructures.swift in Sources */,
 				9250E2161A2A5F15006B70D8 /* GAClient.swift in Sources */,
 				921268581A2B2711007DFD1C /* GASession.swift in Sources */,

@@ -12,3 +12,4 @@ public enum GAPlayerConnectionState {
     case GAPlayerConnectionStateConnected
     case GAPlayerConnectionStateNotConnected
 }
+
