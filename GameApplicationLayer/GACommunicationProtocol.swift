@@ -8,6 +8,11 @@
 
 import Foundation
 
+//Packet structure 1035 bytes
+// - Header: 11 bytes
+// - Payload: maximun of 1024 bytes
+
+
 //Bit masks used to get information stored in a lower level than the byte.
 struct GAPHeaderMasks{
     let VERSION:     UInt8 = 0b11000000
@@ -24,6 +29,7 @@ struct GAPHeader {
     var seqNumber: UInt8 = 0
     var timeStamp: UInt32 = 0
     var SSRC: UInt32 = 0
+    var text = Array<Character>(count: 4, repeatedValue: "*")
 }
 
 struct GAPpayloadTypes {
@@ -31,6 +37,34 @@ struct GAPpayloadTypes {
     let NODE:           UInt8 = 2
     let NODEACTION:     UInt8 = 3
     let PAUSE:          UInt8 = 4
+}
+
+struct GAPScenePayload {
+    var sceneIdentifier:    UInt8 = 0
+}
+
+struct GAPnodePayload {
+    var nodeIdentifier:     UInt8 = 0
+}
+
+
+struct Vector3D {
+    var dx: Int16 = 0
+    var dy: Int16 = 0
+    var dz: Int16 = 0
+}
+
+struct ScenePoint {
+    var x: Int16 = 0
+    var y: Int16 = 0
+    var z: Int16 = 0
+}
+
+struct GAPnodeactionPayload {
+    var nodeIdentifier  : UInt8 = 0
+    var startPoint      = ScenePoint()
+    var speed           : Float32 = 0.0
+    var direction       = Vector3D()
 }
 
 //It has to be decided if it would be an instance of the protocol for each session(network) the peer is connected or for each connection client-server
@@ -66,6 +100,8 @@ class GACommunicationProtocol {
         
         self.setTimeStamp(toByte: &msg.timeStamp)
         self.setSSRC(toByte: &msg.SSRC)
+        
+        msg.text = ["H","o","l","a"]
         
         var aux = NSData(bytes: &msg, length: sizeof(GAPHeader))
         
