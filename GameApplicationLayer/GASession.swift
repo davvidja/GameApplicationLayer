@@ -48,7 +48,7 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
     
     // Remote peer changed state
      func session(session: MCSession!, peer peerID: MCPeerID!, didChangeState state: MCSessionState) {
-        println("Peer \(peerID.displayName) has changed state to \(state)")
+        println("Peer \(peerID.displayName) has changed state to \(self.stringForPeerConnectionState(state))")
         
         switch state {
             
@@ -128,6 +128,13 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
             
         case NSStreamEvent.HasBytesAvailable:
             println("Bytes available event received")
+            var data = NSMutableData()
+            var buffer = UnsafeMutablePointer<UInt8>()
+            
+            var len = inputStream!.read(buffer, maxLength: 1024)
+            
+        println("Bytes read: \(len)")
+            
             
         case NSStreamEvent.HasSpaceAvailable:
             println("Space available event received")
@@ -215,6 +222,21 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
             inputStream!.close()
         }
 
+    }
+    
+    
+    // Helper method for human readable printing of MCSessionState.  This state is per peer.
+    func stringForPeerConnectionState(state: MCSessionState)->String{
+        switch(state){
+        case MCSessionState.Connected:
+            return "Connected";
+            
+        case MCSessionState.Connecting:
+            return "Connecting";
+            
+        case MCSessionState.NotConnected:
+            return "Not Connected";
+        }
     }
     
 }
