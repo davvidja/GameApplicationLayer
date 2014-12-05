@@ -13,6 +13,18 @@ import Foundation
 // - Payload: maximun of 1024 bytes
 
 
+struct Vector3D {
+    var dx: Int16 = 0
+    var dy: Int16 = 0
+    var dz: Int16 = 0
+}
+
+struct ScenePoint {
+    var x: Int16 = 0
+    var y: Int16 = 0
+    var z: Int16 = 0
+}
+
 //Bit masks used to get information stored in a lower level than the byte.
 struct GAPHeaderMasks{
     let VERSION:     UInt8 = 0b11000000
@@ -24,12 +36,12 @@ struct GAPHeaderMasks{
 }
 
 struct GAPHeader {
-    var V_P_X_CC: UInt8 = 0
-    var M_PT: UInt8 = 0
-    var seqNumber: UInt8 = 0
-    var timeStamp: UInt32 = 0
-    var SSRC: UInt32 = 0
-    var text = Array<Character>(count: 4, repeatedValue: "*")
+    var V_P_X_CC    : UInt8 = 0
+    var M_PT        : UInt8 = 0
+    var seqNumber   : UInt8 = 0
+    var timeStamp   : UInt32 = 0
+    var SSRC        : UInt32 = 0
+    var text        = Array<Character>(count: 4, repeatedValue: "*")
 }
 
 struct GAPpayloadTypes {
@@ -43,37 +55,34 @@ struct GAPScenePayload {
     var sceneIdentifier:    UInt8 = 0
 }
 
-struct GAPnodePayload {
+struct GAPNodePayload {
     var nodeIdentifier:     UInt8 = 0
 }
 
-
-struct Vector3D {
-    var dx: Int16 = 0
-    var dy: Int16 = 0
-    var dz: Int16 = 0
-}
-
-struct ScenePoint {
-    var x: Int16 = 0
-    var y: Int16 = 0
-    var z: Int16 = 0
-}
-
-struct GAPnodeactionPayload {
+struct GAPNodeactionPayload {
     var nodeIdentifier  : UInt8 = 0
     var startPoint      = ScenePoint()
     var speed           : Float32 = 0.0
     var direction       = Vector3D()
 }
 
+struct GAPNodePacket {
+    var header  = GAPHeader()
+    var payload = GAPNodePayload()
+}
+
+struct GAPScenePacket {
+    var header  = GAPHeader()
+    var payload = GAPScenePayload()
+}
+
 //It has to be decided if it would be an instance of the protocol for each session(network) the peer is connected or for each connection client-server
 class GACommunicationProtocol {
-    var protocolVersion: UInt8 = 1
-    let hdrMasks = GAPHeaderMasks ()
-    let payloadTypes = GAPpayloadTypes ()
-    var SSRC: UInt32
-    var hdrBuffer: UnsafeMutablePointer<UInt8>?
+    var protocolVersion : UInt8 = 1
+    let hdrMasks        = GAPHeaderMasks ()
+    let payloadTypes    = GAPpayloadTypes ()
+    var SSRC            : UInt32
+    var hdrBuffer       : UnsafeMutablePointer<UInt8>?
     
     init(){
         SSRC = UInt32(random())

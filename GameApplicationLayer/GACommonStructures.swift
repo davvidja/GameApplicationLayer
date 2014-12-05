@@ -13,3 +13,11 @@ public enum GAPlayerConnectionState {
     case GAPlayerConnectionStateNotConnected
 }
 
+public struct GAPNode {
+    var nodeIdentifier :UInt8 = 0
+}
+
+public struct GAPScene {
+    var sceneIdentifier :UInt8 = 0
+}
+
