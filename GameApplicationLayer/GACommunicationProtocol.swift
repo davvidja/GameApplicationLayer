@@ -33,11 +33,13 @@ struct GAPpayloadTypes {
     let PAUSE:          UInt8 = 4
 }
 
+//It has to be decided if it would be an instance of the protocol for each session(network) the peer is connected or for each connection client-server
 class GACommunicationProtocol {
     var protocolVersion: UInt8 = 1
     let hdrMasks = GAPHeaderMasks ()
     let payloadTypes = GAPpayloadTypes ()
     var SSRC: UInt32
+    var hdrBuffer: UnsafeMutablePointer<UInt8>?
     
     init(){
         SSRC = UInt32(random())
@@ -156,6 +158,13 @@ class GACommunicationProtocol {
         intervalTimeStamp = now.timeIntervalSinceDate(date19000101!)
         
         byte = UInt32(intervalTimeStamp!)
+    }
+    
+    //Method called when bytes are available in the input stream
+    func receiveData()->(UnsafeMutablePointer<UInt8>,Int){
+        hdrBuffer = UnsafeMutablePointer<UInt8>.alloc(sizeof(GAPHeader))
+        
+        return (hdrBuffer!, sizeof(GAPHeader))
     }
     
     func setSSRC(inout toByte byte: UInt32){

@@ -86,4 +86,8 @@ public class GAServer: NSObject, GASessionDelegate {
         
         delegate!.player(peerPlayer: peerPlayer, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateConnected)
     }
+    
+    public func receiveData ()->(UnsafeMutablePointer<UInt8>,Int){
+        return communicationProtocol!.receiveData()
+    }
 }

@@ -23,6 +23,8 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
     var session: GASession?
     var adverstiserAssistant: MCAdvertiserAssistant?
     var peersBrowser: MCBrowserViewController?
+    var communicationProtocol: GACommunicationProtocol?
+
     public var delegate: GAServerDelegate?
     
     
@@ -40,6 +42,11 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
             peersBrowser = MCBrowserViewController(serviceType: serviceType, session: session!.session)
             peersBrowser!.delegate = self
         }
+        
+        
+        if (communicationProtocol == nil){
+            communicationProtocol = GACommunicationProtocol()
+        }
     }
     
     public func startGameClient (parentViewController: UIViewController) {
@@ -49,6 +56,8 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
     public func stopGameClient () {
         session!.disconnect()
     }
+    
+
     
 
     
@@ -75,6 +84,10 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
         println("ViewController> Player \(peerPlayer) change estate to \(newState)")
         
         delegate!.player(peerPlayer: peerPlayer, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateConnected)
+    }
+    
+    public func receiveData ()->(UnsafeMutablePointer<UInt8>,Int){
+        return communicationProtocol!.receiveData()
     }
 
 }

@@ -11,6 +11,7 @@ import MultipeerConnectivity
 
 protocol GASessionDelegate {
     func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState)
+    func receiveData ()->(UnsafeMutablePointer<UInt8>,Int)
 }
 
 class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
@@ -128,12 +129,14 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
             
         case NSStreamEvent.HasBytesAvailable:
             println("Bytes available event received")
-            var data = NSMutableData()
-            var buffer = UnsafeMutablePointer<UInt8>()
+            //var data = NSMutableData()
+            //var buffer = UnsafeMutablePointer<UInt8>.alloc(1024)
             
-            var len = inputStream!.read(buffer, maxLength: 1024)
+            var (buffer, maxLen) = self.delegate!.receiveData()
             
-        println("Bytes read: \(len)")
+            var len = inputStream!.read(buffer, maxLength: maxLen)
+            
+            println("Bytes read: \(len)")
             
             
         case NSStreamEvent.HasSpaceAvailable:
