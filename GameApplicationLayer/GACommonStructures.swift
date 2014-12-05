@@ -7,17 +7,37 @@
 //
 
 import Foundation
+import MultipeerConnectivity
 
 public enum GAPlayerConnectionState {
     case GAPlayerConnectionStateConnected
     case GAPlayerConnectionStateNotConnected
+    
+    // Helper method for human readable printing of MCSessionState.  This state is per peer.
+    static public func stringForPeerConnectionState(state: GAPlayerConnectionState)->String{
+        switch(state){
+        case .GAPlayerConnectionStateConnected:
+            return "Connected";
+            
+        case .GAPlayerConnectionStateNotConnected:
+            return "Not Connected";
+        }
+    }
 }
 
 public struct GAPNode {
-    var nodeIdentifier :UInt8 = 0
+    public var nodeIdentifier :UInt8
+    
+    public init(){
+        nodeIdentifier = 0
+    }
 }
 
 public struct GAPScene {
-    var sceneIdentifier :UInt8 = 0
+    public var sceneIdentifier :UInt8
+    
+    public init(){
+        sceneIdentifier = 0
+    }
 }
 

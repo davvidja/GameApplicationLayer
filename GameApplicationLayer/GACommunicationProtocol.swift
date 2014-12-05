@@ -27,12 +27,12 @@ struct ScenePoint {
 
 //Bit masks used to get information stored in a lower level than the byte.
 struct GAPHeaderMasks{
-    let VERSION:     UInt8 = 0b11000000
-    let PADDING:     UInt8 = 0b00100000
-    let EXTENSION:   UInt8 = 0b00010000
-    let CSRCCOUNT:   UInt8 = 0b00001111
-    let MARKER:      UInt8 = 0b10000000
-    let PAYLOAD:     UInt8 = 0b01111111
+    let VERSION     : UInt8 = 0b11000000
+    let PADDING     : UInt8 = 0b00100000
+    let EXTENSION   : UInt8 = 0b00010000
+    let CSRCCOUNT   : UInt8 = 0b00001111
+    let MARKER      : UInt8 = 0b10000000
+    let PAYLOAD     : UInt8 = 0b01111111
 }
 
 struct GAPHeader {
@@ -45,18 +45,18 @@ struct GAPHeader {
 }
 
 struct GAPpayloadTypes {
-    let SCENE:          UInt8 = 1
-    let NODE:           UInt8 = 2
-    let NODEACTION:     UInt8 = 3
-    let PAUSE:          UInt8 = 4
+    let SCENE       : UInt8 = 1
+    let NODE        : UInt8 = 2
+    let NODEACTION  : UInt8 = 3
+    let PAUSE       : UInt8 = 4
 }
 
 struct GAPScenePayload {
-    var sceneIdentifier:    UInt8 = 0
+    var sceneIdentifier : UInt8 = 0
 }
 
 struct GAPNodePayload {
-    var nodeIdentifier:     UInt8 = 0
+    var nodeIdentifier  : UInt8 = 0
 }
 
 struct GAPNodeactionPayload {
@@ -83,38 +83,44 @@ class GACommunicationProtocol {
     let payloadTypes    = GAPpayloadTypes ()
     var SSRC            : UInt32
     var hdrBuffer       : UnsafeMutablePointer<UInt8>?
+    var msgNode         : GAPNodePacket?
+    var msgScene        : GAPScenePacket?
     
     init(){
         SSRC = UInt32(random())
     }
     
     //This metod creates the message regarding with the protocolo primitive SENDNODE
-    func sendNode() -> (UnsafePointer<UInt8>,Int) {
-        var msg = GAPHeader()
+    func sendNode(node: GAPNode) -> (UnsafePointer<UInt8>,Int) {
+//        var msg = GAPHeader()
+        msgNode = GAPNodePacket()
         var buffer = UnsafePointer<UInt8>()
         
+        self.buildHeader(&msgNode!.header, payloadType: payloadTypes.NODE)
         
-        var version = self.protocolVersion
+        //Building payload
+        msgNode!.payload.nodeIdentifier = node.nodeIdentifier
         
-        msg.V_P_X_CC    = 0b10110101
-        msg.M_PT        = 0b10100011
-        
-        self.setVersionBits(version, toByte: &msg.V_P_X_CC)
-        self.setPaddingBits(0, toByte: &msg.V_P_X_CC)          //For the moment, the padding bit will be set to '0' always
-        self.setExtensionBits(0, toByte: &msg.V_P_X_CC)        //For the moment, the extension bit will be set to '0' always
-        self.setCSRCCountBits(0, toByte: &msg.V_P_X_CC)
-        
-        self.setMarkerBits(1, toByte: &msg.M_PT)
-        self.setPayLoadTypeBits(payloadTypes.NODE, toByte: &msg.M_PT)
-        
-        self.setTimeStamp(toByte: &msg.timeStamp)
-        self.setSSRC(toByte: &msg.SSRC)
-        
-        msg.text = ["H","o","l","a"]
-        
-        var aux = NSData(bytes: &msg, length: sizeof(GAPHeader))
+        var aux = NSData(bytes: &msgNode!, length: sizeof(GAPNodePacket))
         
         return (UnsafePointer<UInt8>(aux.bytes), aux.length)
+    }
+    
+    func buildHeader (inout header: GAPHeader, payloadType: UInt8){
+        var version = self.protocolVersion
+        
+        self.setVersionBits(version, toByte: &header.V_P_X_CC)
+        self.setPaddingBits(0, toByte: &header.V_P_X_CC)          //For the moment, the padding bit will be set to '0' always
+        self.setExtensionBits(0, toByte: &header.V_P_X_CC)        //For the moment, the extension bit will be set to '0' always
+        self.setCSRCCountBits(0, toByte: &header.V_P_X_CC)
+        
+        self.setMarkerBits(1, toByte: &header.M_PT)
+        self.setPayLoadTypeBits(payloadType, toByte: &header.M_PT)
+        
+        self.setTimeStamp(toByte: &header.timeStamp)
+        self.setSSRC(toByte: &header.SSRC)
+        
+        header.text = ["H","o","l","a"]
     }
     
     func setVersionBits(versionBits: UInt8, inout toByte byte: UInt8){

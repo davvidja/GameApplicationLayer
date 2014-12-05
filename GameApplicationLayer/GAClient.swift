@@ -81,7 +81,7 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
     
     //Methods of the GASessionDelegate protocol
     func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState){
-        println("ViewController> Player \(peerPlayer) change estate to \(newState)")
+        println("GAClient> Player \(peerPlayer) change estate to \(GAPlayerConnectionState.stringForPeerConnectionState(newState) )")
         
         delegate!.player(peerPlayer: peerPlayer, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateConnected)
     }

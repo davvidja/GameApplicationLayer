@@ -49,7 +49,7 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
     
     // Remote peer changed state
      func session(session: MCSession!, peer peerID: MCPeerID!, didChangeState state: MCSessionState) {
-        println("Peer \(peerID.displayName) has changed state to \(self.stringForPeerConnectionState(state))")
+        println("Peer \(peerID.displayName) has changed state to \( (state))")
         
         switch state {
             

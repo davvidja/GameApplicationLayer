@@ -54,21 +54,15 @@ public class GAServer: NSObject, GASessionDelegate {
         adverstiserAssistant!.stop()
     }
     
-    //Transmition methods
-    public func sendData (buffer: UnsafePointer<UInt8>, maxlength: Int){
-        communicationProtocol!.sendNode()
-        session!.writeOutputStream(buffer, maxLength: maxlength)
-    }
-    
     
     public func sendScene () {
         
     }
     
-    public func sendNode () {
+    public func sendNode (node: GAPNode) {
         var buffer: UnsafePointer<UInt8>
         var bufferSize: Int
-        (buffer, bufferSize) = communicationProtocol!.sendNode()
+        (buffer, bufferSize) = communicationProtocol!.sendNode(node)
         session!.writeOutputStream(buffer, maxLength: bufferSize)
     }
     
@@ -82,7 +76,7 @@ public class GAServer: NSObject, GASessionDelegate {
     
     //Methods of the GASessionDelegate protocol
     func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState){
-        println("ViewController> Player \(peerPlayer) change estate to \(newState)")
+        println("GAServer> Player \(peerPlayer) change state to \(GAPlayerConnectionState.stringForPeerConnectionState(newState) )")
         
         delegate!.player(peerPlayer: peerPlayer, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateConnected)
     }
