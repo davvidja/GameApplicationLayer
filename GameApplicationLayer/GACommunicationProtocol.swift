@@ -82,12 +82,30 @@ class GACommunicationProtocol {
     let hdrMasks        = GAPHeaderMasks ()
     let payloadTypes    = GAPpayloadTypes ()
     var SSRC            : UInt32
-    var hdrBuffer       : UnsafeMutablePointer<UInt8>?
+//    var hdrBuffer       : UnsafeMutablePointer<UInt8> {
+//        didSet{
+//            println("GACommunicationProtocol> hdrBuffer has been set")
+//        }
+//    }
+
+    var hdrBuffer       : UnsafeMutablePointer<GAPHeader>
+    var hdr             = GAPHeader()
+    var buffer          = UnsafeMutablePointer<UInt8>()
+    
     var msgNode         : GAPNodePacket?
     var msgScene        : GAPScenePacket?
     
     init(){
         SSRC = UInt32(random())
+//        hdrBuffer = UnsafeMutablePointer<UInt8>.alloc(1)
+        
+        
+        hdrBuffer = UnsafeMutablePointer<GAPHeader>.alloc(1)
+        hdrBuffer.initialize(GAPHeader())
+        
+        var aux = hdrBuffer.memory
+        
+        println("GACommunicationProtocol> hdrBuffer address: \(hdrBuffer.hashValue)")
     }
     
     //This metod creates the message regarding with the protocolo primitive SENDNODE
@@ -190,6 +208,52 @@ class GACommunicationProtocol {
         byte = payloadBits | nopayloadBits
     }
     
+    func getPayloadTypeBits(header: GAPHeader)->UInt8{
+        var payloadBits: UInt8
+        
+        return header.M_PT & hdrMasks.PAYLOAD
+    }
+    
+    func parseMessage(){
+        var aux = UnsafeMutablePointer<GAPHeader> (bitPattern: hdrBuffer.hashValue)
+        
+        var h = GAPHeader()
+        var aux2 = UnsafeMutablePointer<GAPHeader>.alloc(1)
+        
+        aux2.initialize(GAPHeader())
+        var aux3 = aux2.memory
+
+//        aux2.memory = h
+        
+        var aux4 = self.hdrBuffer.memory
+        
+
+        
+        var payloadType = self.getPayloadTypeBits(hdrBuffer.memory)
+        
+        //var payloadType = self.getPayloadTypeBits(hdrBuffer.memory)
+
+        
+        
+        switch (payloadType){
+        case GAPpayloadTypes().NODE:
+            println("GACommunicationProtocol> Payload type NODE")
+            
+        case GAPpayloadTypes().SCENE:
+            println("GACommunicationProtocol> Payload type SCENE")
+
+        case GAPpayloadTypes().NODEACTION:
+            println("GACommunicationProtocol> Payload type NODEACTION")
+
+        case GAPpayloadTypes().PAUSE:
+            println("GACommunicationProtocol> Payload type PAUSE")
+        
+        default:
+            println("GACommunicationProtocol> Payload type unkown")
+
+        }
+    }
+    
     func setTimeStamp(inout toByte byte: UInt32){
         var gregorianCalendar = NSCalendar(calendarIdentifier: NSGregorianCalendar)
         var dateComponentes19000101 = NSDateComponents()
@@ -211,16 +275,31 @@ class GACommunicationProtocol {
         byte = UInt32(intervalTimeStamp!)
     }
     
-    //Method called when bytes are available in the input stream
-    func receiveData()->(UnsafeMutablePointer<UInt8>,Int){
-        hdrBuffer = UnsafeMutablePointer<UInt8>.alloc(sizeof(GAPHeader))
-        
-        return (hdrBuffer!, sizeof(GAPHeader))
-    }
-    
     func setSSRC(inout toByte byte: UInt32){
         byte = SSRC
     }
+    
+    func readData(bytesRead: Int){
+        println("GACommunicationProtocol> number of bytes read: \(bytesRead)")
+        
+        /* Following the next steps
+         *   1. Checking the verion (V) of the protocol. It should comfort of the current implementation
+         *   2. Checking the payload type (PT) for determinig the primitive of the protocol sent
+         *   3. Reading the payload according with the PT sent
+         */
+        self.parseMessage()
+    }
 
-
+    
+    //Method called when bytes are available in the input stream
+//    func receiveData()->(UnsafeMutablePointer<UInt8>,Int, (UnsafeMutablePointer<UInt8>,Int)){
+    func receiveData()->(UnsafeMutablePointer<UInt8>,Int, (Int)->Void){
+        //hdrBuffer = UnsafeMutablePointer<UInt8>.alloc(sizeof(GAPHeader))
+        buffer = UnsafeMutablePointer<UInt8>(hdrBuffer)
+       
+        var aux = buffer.memory
+        var aux2 = hdrBuffer.memory
+        
+        return (buffer, sizeof(GAPHeader),readData)
+    }
 }

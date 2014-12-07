@@ -86,7 +86,7 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
         delegate!.player(peerPlayer: peerPlayer, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateConnected)
     }
     
-    public func receiveData ()->(UnsafeMutablePointer<UInt8>,Int){
+    public func receiveData ()->(UnsafeMutablePointer<UInt8>,Int, (Int)->Void){
         return communicationProtocol!.receiveData()
     }
 

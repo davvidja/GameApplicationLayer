@@ -11,7 +11,7 @@ import MultipeerConnectivity
 
 protocol GASessionDelegate {
     func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState)
-    func receiveData ()->(UnsafeMutablePointer<UInt8>,Int)
+    func receiveData ()->(UnsafeMutablePointer<UInt8>,Int, (Int)->Void)
 }
 
 class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
@@ -24,6 +24,8 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
     var outputStreamOpenCompleted, inputStreamOpenCompleted: Bool
     var outputStreamHasSpaceAvailable: Bool
     var delegate: GASessionDelegate?
+    var buffer = UnsafeMutablePointer<UInt8>()
+    
     
     init(peer: MCPeerID){
         outputStreamStarted = false
@@ -49,7 +51,7 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
     
     // Remote peer changed state
      func session(session: MCSession!, peer peerID: MCPeerID!, didChangeState state: MCSessionState) {
-        println("Peer \(peerID.displayName) has changed state to \( (state))")
+        println("Peer \(peerID.displayName) has changed state to \(self.stringForPeerConnectionState(state))")
         
         switch state {
             
@@ -131,10 +133,51 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
             println("Bytes available event received")
             //var data = NSMutableData()
             //var buffer = UnsafeMutablePointer<UInt8>.alloc(1024)
+            var maxLen: Int
+            var callback: (Int)->Void
             
-            var (buffer, maxLen) = self.delegate!.receiveData()
+//            var aux6 = UnsafeMutablePointer<UInt8>(aux4)
+            println("aux6 UInt8 pointer. Allocating \(sizeof(GAPHeader)) bytes")
             
-            var len = inputStream!.read(buffer, maxLength: maxLen)
+            var hdrPointer = UnsafeMutablePointer<GAPHeader>.alloc(1)
+            hdrPointer.initialize(GAPHeader())
+            
+            
+            var uint8Pointer = UnsafeMutablePointer<UInt8>(hdrPointer)
+            
+            var auxUint8PointerMem = uint8Pointer.memory
+            var auxHdrPointerMem = hdrPointer.memory
+
+            
+            (buffer, maxLen, callback) = self.delegate!.receiveData()
+            var aux = UnsafeMutablePointer<UInt8>.alloc(maxLen)
+            
+
+            
+            println("GASession> buffer address: \(buffer.hashValue)")
+            println("GASession> buffer debug description: \(buffer.debugDescription)")
+            
+            var len = inputStream!.read(UnsafeMutablePointer<UInt8>(hdrPointer), maxLength: maxLen)
+            
+            var data = NSData(bytes: hdrPointer, length: sizeof(GAPHeader))
+            
+            var newHdrPointer = UnsafeMutablePointer<GAPHeader>.alloc(1)
+            newHdrPointer.initialize(GAPHeader())
+            
+            var aux8 = newHdrPointer.memory
+
+            data.getBytes(newHdrPointer, length: 15)
+            
+            aux8 = newHdrPointer.memory
+            
+            var aux6 = hdrPointer.memory
+            var aux5 = UnsafeMutablePointer<GAPHeader>(uint8Pointer)
+            
+            var aux3 = (uint8Pointer+17).memory
+            var aux4 = aux5.memory
+//            var aux4 = hdrPointer.memory
+            
+            callback(len)
             
             println("Bytes read: \(len)")
             
