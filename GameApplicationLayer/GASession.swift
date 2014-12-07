@@ -147,6 +147,8 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
             
             var auxUint8PointerMem = uint8Pointer.memory
             var auxHdrPointerMem = hdrPointer.memory
+            
+            println("Sizeof GAPHeader is \(sizeof(GAPHeader))")
 
             
             (buffer, maxLen, callback) = self.delegate!.receiveData()
@@ -157,26 +159,8 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
             println("GASession> buffer address: \(buffer.hashValue)")
             println("GASession> buffer debug description: \(buffer.debugDescription)")
             
-            var len = inputStream!.read(UnsafeMutablePointer<UInt8>(hdrPointer), maxLength: maxLen)
-            
-            var data = NSData(bytes: hdrPointer, length: sizeof(GAPHeader))
-            
-            var newHdrPointer = UnsafeMutablePointer<GAPHeader>.alloc(1)
-            newHdrPointer.initialize(GAPHeader())
-            
-            var aux8 = newHdrPointer.memory
-
-            data.getBytes(newHdrPointer, length: 15)
-            
-            aux8 = newHdrPointer.memory
-            
-            var aux6 = hdrPointer.memory
-            var aux5 = UnsafeMutablePointer<GAPHeader>(uint8Pointer)
-            
-            var aux3 = (uint8Pointer+17).memory
-            var aux4 = aux5.memory
-//            var aux4 = hdrPointer.memory
-            
+            var len = inputStream!.read(buffer, maxLength: maxLen)
+                        
             callback(len)
             
             println("Bytes read: \(len)")

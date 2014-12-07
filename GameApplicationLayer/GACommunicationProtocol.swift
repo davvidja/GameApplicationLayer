@@ -296,10 +296,7 @@ class GACommunicationProtocol {
     func receiveData()->(UnsafeMutablePointer<UInt8>,Int, (Int)->Void){
         //hdrBuffer = UnsafeMutablePointer<UInt8>.alloc(sizeof(GAPHeader))
         buffer = UnsafeMutablePointer<UInt8>(hdrBuffer)
-       
-        var aux = buffer.memory
-        var aux2 = hdrBuffer.memory
         
-        return (buffer, sizeof(GAPHeader),readData)
+        return (buffer, sizeof(GAPHeader)-1,readData)
     }
 }
