@@ -9,9 +9,24 @@
 import Foundation
 import MultipeerConnectivity
 
+struct TMPGAPHeader {
+    var V_P_X_CC    : UInt8 = 0
+    var M_PT        : UInt8 = 0
+    var seqNumber   : UInt16 = 0
+    var timeStamp   : UInt32 = 0
+    var SSRC        : UInt32 = 0
+//    var text        = Array<Character>(count: 4, repeatedValue: "*")
+}
+
+struct TMPGAPNodePacket {
+    var header  = TMPGAPHeader()
+    var payload = GAPNodePayload()
+}
+
 protocol GASessionDelegate {
     func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState)
     func receiveData ()->(UnsafeMutablePointer<UInt8>,Int, (Int)->Void)
+    func readData (bytesRead: Int)
 }
 
 class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
@@ -26,6 +41,13 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
     var delegate: GASessionDelegate?
     var buffer = UnsafeMutablePointer<UInt8>()
     
+    var GAPheader = UnsafeMutablePointer<TMPGAPNodePacket>.alloc(1)
+    var tmpGAPNodePacket: UnsafeMutablePointer<TMPGAPNodePacket>
+
+
+    
+    var once: Bool
+    
     
     init(peer: MCPeerID){
         outputStreamStarted = false
@@ -35,6 +57,15 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
         outputStreamHasSpaceAvailable = false
         
         session = MCSession(peer: peer)
+        
+        once = true
+        
+        GAPheader.initialize(TMPGAPNodePacket())
+        
+        tmpGAPNodePacket = UnsafeMutablePointer<TMPGAPNodePacket>.alloc(1)
+        tmpGAPNodePacket.initialize(TMPGAPNodePacket())
+
+
         
         super.init()
         
@@ -131,39 +162,39 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
             
         case NSStreamEvent.HasBytesAvailable:
             println("Bytes available event received")
-            //var data = NSMutableData()
-            //var buffer = UnsafeMutablePointer<UInt8>.alloc(1024)
+
             var maxLen: Int
             var callback: (Int)->Void
             
-//            var aux6 = UnsafeMutablePointer<UInt8>(aux4)
-            println("aux6 UInt8 pointer. Allocating \(sizeof(GAPHeader)) bytes")
+            if (once){
             
-            var hdrPointer = UnsafeMutablePointer<GAPHeader>.alloc(1)
-            hdrPointer.initialize(GAPHeader())
+//                (buffer, maxLen, callback) = self.delegate!.receiveData()
+                println("***** TMPGAPNodePacket has a size of \(sizeof(TMPGAPNodePacket))")
+                
+//                var GAPheader = UnsafeMutablePointer<TMPGAPNodePacket>.alloc(1)
+//                GAPheader.initialize(TMPGAPNodePacket())
+                
+                var aux2 = tmpGAPNodePacket.memory
+                
+                buffer = UnsafeMutablePointer<UInt8>.alloc(sizeof(TMPGAPNodePacket))
+                
+                //buffer = UnsafeMutablePointer<UInt8>(tmpGAPNodePacket)
+        
             
+                var len = inputStream!.read(buffer, maxLength: sizeof(TMPGAPNodePacket))
+//                var len = inputStream!.read(buffer, maxLength: maxLen)
+                
+                var data = NSData(bytes: buffer, length: len)
+                
+                tmpGAPNodePacket = UnsafeMutablePointer<TMPGAPNodePacket>(data.bytes)
+                var aux = tmpGAPNodePacket.memory
             
-            var uint8Pointer = UnsafeMutablePointer<UInt8>(hdrPointer)
+//            callback(len)
+                //self.delegate!.readData(len)
             
-            var auxUint8PointerMem = uint8Pointer.memory
-            var auxHdrPointerMem = hdrPointer.memory
-            
-            println("Sizeof GAPHeader is \(sizeof(GAPHeader))")
-
-            
-            (buffer, maxLen, callback) = self.delegate!.receiveData()
-            var aux = UnsafeMutablePointer<UInt8>.alloc(maxLen)
-            
-
-            
-            println("GASession> buffer address: \(buffer.hashValue)")
-            println("GASession> buffer debug description: \(buffer.debugDescription)")
-            
-            var len = inputStream!.read(buffer, maxLength: maxLen)
-                        
-            callback(len)
-            
-            println("Bytes read: \(len)")
+                println("GASession> Bytes read: \(len)")
+//                once = false
+            }
             
             
         case NSStreamEvent.HasSpaceAvailable:
@@ -211,7 +242,7 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
         if(outputStreamHasSpaceAvailable){
             bytesWritten = self.outputStream!.write(buffer, maxLength: maxLength)
             
-            println("GASession>: writing into outputStream. Bytes written: \(bytesWritten)")
+            println("GASession>: writing into outputStream. Max length: \(maxLength). Bytes written: \(bytesWritten)")
             
             return true
         } else {

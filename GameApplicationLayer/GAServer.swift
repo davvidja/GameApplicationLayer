@@ -84,4 +84,8 @@ public class GAServer: NSObject, GASessionDelegate {
     public func receiveData ()->(UnsafeMutablePointer<UInt8>,Int,(Int)->Void){
         return communicationProtocol!.receiveData()
     }
+    
+    public func readData(bytesRead: Int){
+        communicationProtocol!.readData(bytesRead)
+    }
 }

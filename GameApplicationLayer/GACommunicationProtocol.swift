@@ -12,6 +12,11 @@ import Foundation
 // - Header: 11 bytes
 // - Payload: maximun of 1024 bytes
 
+let CSCENE       : UInt8 = 1
+let CNODE        : UInt8 = 2
+let CNODEACTION  : UInt8 = 3
+let CPAUSE       : UInt8 = 4
+
 
 struct Vector3D {
     var dx: Int16 = 0
@@ -38,17 +43,17 @@ struct GAPHeaderMasks{
 struct GAPHeader {
     var V_P_X_CC    : UInt8 = 0
     var M_PT        : UInt8 = 0
-    var seqNumber   : UInt8 = 0
+    var seqNumber   : UInt16 = 0
     var timeStamp   : UInt32 = 0
     var SSRC        : UInt32 = 0
-    var text        = Array<Character>(count: 4, repeatedValue: "*")
+//    var text        = Array<Character>(count: 4, repeatedValue: "*")
 }
 
 struct GAPpayloadTypes {
-    let SCENE       : UInt8 = 1
-    let NODE        : UInt8 = 2
-    let NODEACTION  : UInt8 = 3
-    let PAUSE       : UInt8 = 4
+    let SCENE       : UInt8 = CSCENE
+    let NODE        : UInt8 = CNODE
+    let NODEACTION  : UInt8 = CNODEACTION
+    let PAUSE       : UInt8 = CPAUSE
 }
 
 struct GAPScenePayload {
@@ -138,7 +143,7 @@ class GACommunicationProtocol {
         self.setTimeStamp(toByte: &header.timeStamp)
         self.setSSRC(toByte: &header.SSRC)
         
-        header.text = ["H","o","l","a"]
+//        header.text = ["H","o","l","a"]
     }
     
     func setVersionBits(versionBits: UInt8, inout toByte byte: UInt8){
@@ -211,47 +216,40 @@ class GACommunicationProtocol {
     func getPayloadTypeBits(header: GAPHeader)->UInt8{
         var payloadBits: UInt8
         
-        return header.M_PT & hdrMasks.PAYLOAD
+//        return header.M_PT & hdrMasks.PAYLOAD
+        return 1
     }
     
     func parseMessage(){
-        var aux = UnsafeMutablePointer<GAPHeader> (bitPattern: hdrBuffer.hashValue)
-        
-        var h = GAPHeader()
-        var aux2 = UnsafeMutablePointer<GAPHeader>.alloc(1)
-        
-        aux2.initialize(GAPHeader())
-        var aux3 = aux2.memory
 
-//        aux2.memory = h
+        var aux: GAPHeader
         
-        var aux4 = self.hdrBuffer.memory
+//        aux = hdrBuffer.memory
         
+//        var payloadType = self.getPayloadTypeBits(hdrBuffer.memory)
+//        var payloadType = self.getPayloadTypeBits(GAPHeader())
 
-        
-        var payloadType = self.getPayloadTypeBits(hdrBuffer.memory)
-        
-        //var payloadType = self.getPayloadTypeBits(hdrBuffer.memory)
+        var payloadType = UInt8(1)
 
-        
-        
+
         switch (payloadType){
-        case GAPpayloadTypes().NODE:
+        case CNODE:
             println("GACommunicationProtocol> Payload type NODE")
             
-        case GAPpayloadTypes().SCENE:
+        case CSCENE:
             println("GACommunicationProtocol> Payload type SCENE")
 
-        case GAPpayloadTypes().NODEACTION:
+        case CNODEACTION:
             println("GACommunicationProtocol> Payload type NODEACTION")
 
-        case GAPpayloadTypes().PAUSE:
+        case CPAUSE:
             println("GACommunicationProtocol> Payload type PAUSE")
         
         default:
             println("GACommunicationProtocol> Payload type unkown")
 
         }
+
     }
     
     func setTimeStamp(inout toByte byte: UInt32){
@@ -282,6 +280,10 @@ class GACommunicationProtocol {
     func readData(bytesRead: Int){
         println("GACommunicationProtocol> number of bytes read: \(bytesRead)")
         
+        var aux: GAPHeader
+        
+        aux = hdrBuffer.memory
+        
         /* Following the next steps
          *   1. Checking the verion (V) of the protocol. It should comfort of the current implementation
          *   2. Checking the payload type (PT) for determinig the primitive of the protocol sent
@@ -297,6 +299,6 @@ class GACommunicationProtocol {
         //hdrBuffer = UnsafeMutablePointer<UInt8>.alloc(sizeof(GAPHeader))
         buffer = UnsafeMutablePointer<UInt8>(hdrBuffer)
         
-        return (buffer, sizeof(GAPHeader)-1,readData)
+        return (buffer, sizeof(GAPHeader),readData)
     }
 }

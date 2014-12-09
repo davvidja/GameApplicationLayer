@@ -89,5 +89,9 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
     public func receiveData ()->(UnsafeMutablePointer<UInt8>,Int, (Int)->Void){
         return communicationProtocol!.receiveData()
     }
+    
+    public func readData(bytesRead: Int){
+        communicationProtocol!.readData(bytesRead)
+    }
 
 }
