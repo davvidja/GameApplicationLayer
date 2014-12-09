@@ -115,7 +115,6 @@ class GACommunicationProtocol {
     
     //This metod creates the message regarding with the protocolo primitive SENDNODE
     func sendNode(node: GAPNode) -> (UnsafePointer<UInt8>,Int) {
-//        var msg = GAPHeader()
         msgNode = GAPNodePacket()
         var buffer = UnsafePointer<UInt8>()
         
@@ -128,6 +127,27 @@ class GACommunicationProtocol {
         
         return (UnsafePointer<UInt8>(aux.bytes), aux.length)
     }
+    
+    //This metod creates the message regarding with the protocolo primitive SENDNODE
+    func sendScene(scene: GAPScene) -> (UnsafePointer<UInt8>,Int) {
+        msgScene = GAPScenePacket()
+        
+        var msgScenePointer = UnsafeMutablePointer<GAPScenePacket>.alloc(1)
+        msgScenePointer.initialize(GAPScenePacket())
+        
+        
+        var buffer = UnsafePointer<UInt8>()
+        
+        self.buildHeader(&msgScenePointer.memory.header, payloadType: payloadTypes.SCENE)
+        
+        //Building payload
+        msgScenePointer.memory.payload.sceneIdentifier = scene.sceneIdentifier
+        
+//        var aux = NSData(bytes: &msgScene!, length: sizeof(GAPScenePacket))
+        
+        return (UnsafePointer<UInt8>(msgScenePointer), sizeof(GAPScenePacket))
+    }
+
     
     func buildHeader (inout header: GAPHeader, payloadType: UInt8){
         var version = self.protocolVersion
@@ -216,21 +236,11 @@ class GACommunicationProtocol {
     func getPayloadTypeBits(header: GAPHeader)->UInt8{
         var payloadBits: UInt8
         
-//        return header.M_PT & hdrMasks.PAYLOAD
-        return 1
+        return header.M_PT & hdrMasks.PAYLOAD
     }
     
     func parseMessage(){
-
-        var aux: GAPHeader
-        
-//        aux = hdrBuffer.memory
-        
-//        var payloadType = self.getPayloadTypeBits(hdrBuffer.memory)
-//        var payloadType = self.getPayloadTypeBits(GAPHeader())
-
-        var payloadType = UInt8(1)
-
+        var payloadType = self.getPayloadTypeBits(hdrBuffer.memory)
 
         switch (payloadType){
         case CNODE:
@@ -280,23 +290,21 @@ class GACommunicationProtocol {
     func readData(bytesRead: Int){
         println("GACommunicationProtocol> number of bytes read: \(bytesRead)")
         
-        var aux: GAPHeader
-        
-        aux = hdrBuffer.memory
-        
-        /* Following the next steps
-         *   1. Checking the verion (V) of the protocol. It should comfort of the current implementation
-         *   2. Checking the payload type (PT) for determinig the primitive of the protocol sent
-         *   3. Reading the payload according with the PT sent
-         */
-        self.parseMessage()
+        if (bytesRead == sizeof(GAPHeader)){
+            /* Following the next steps
+            *   1. Checking the verion (V) of the protocol. It should comfort of the current implementation
+            *   2. Checking the payload type (PT) for determinig the primitive of the protocol sent
+            *   3. Reading the payload according with the PT sent
+            */
+            self.parseMessage()
+        } else {
+            println("GACommunicationProtocol> number of bytes read does not complain with the destination structure. Data will not be parsed")
+        }
     }
 
     
     //Method called when bytes are available in the input stream
-//    func receiveData()->(UnsafeMutablePointer<UInt8>,Int, (UnsafeMutablePointer<UInt8>,Int)){
     func receiveData()->(UnsafeMutablePointer<UInt8>,Int, (Int)->Void){
-        //hdrBuffer = UnsafeMutablePointer<UInt8>.alloc(sizeof(GAPHeader))
         buffer = UnsafeMutablePointer<UInt8>(hdrBuffer)
         
         return (buffer, sizeof(GAPHeader),readData)

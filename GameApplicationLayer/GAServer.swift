@@ -55,8 +55,11 @@ public class GAServer: NSObject, GASessionDelegate {
     }
     
     
-    public func sendScene () {
-        
+    public func sendScene (scene: GAPScene) {
+        var buffer: UnsafePointer<UInt8>
+        var bufferSize: Int
+        (buffer, bufferSize) = communicationProtocol!.sendScene(scene)
+        session!.writeOutputStream(buffer, maxLength: bufferSize)
     }
     
     public func sendNode (node: GAPNode) {

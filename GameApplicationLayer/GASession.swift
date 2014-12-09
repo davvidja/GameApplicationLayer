@@ -9,19 +9,6 @@
 import Foundation
 import MultipeerConnectivity
 
-struct TMPGAPHeader {
-    var V_P_X_CC    : UInt8 = 0
-    var M_PT        : UInt8 = 0
-    var seqNumber   : UInt16 = 0
-    var timeStamp   : UInt32 = 0
-    var SSRC        : UInt32 = 0
-//    var text        = Array<Character>(count: 4, repeatedValue: "*")
-}
-
-struct TMPGAPNodePacket {
-    var header  = TMPGAPHeader()
-    var payload = GAPNodePayload()
-}
 
 protocol GASessionDelegate {
     func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState)
@@ -41,11 +28,6 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
     var delegate: GASessionDelegate?
     var buffer = UnsafeMutablePointer<UInt8>()
     
-    var GAPheader = UnsafeMutablePointer<TMPGAPNodePacket>.alloc(1)
-    var tmpGAPNodePacket: UnsafeMutablePointer<TMPGAPNodePacket>
-
-
-    
     var once: Bool
     
     
@@ -59,14 +41,7 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
         session = MCSession(peer: peer)
         
         once = true
-        
-        GAPheader.initialize(TMPGAPNodePacket())
-        
-        tmpGAPNodePacket = UnsafeMutablePointer<TMPGAPNodePacket>.alloc(1)
-        tmpGAPNodePacket.initialize(TMPGAPNodePacket())
-
-
-        
+                
         super.init()
         
         session!.delegate = self
@@ -163,36 +138,19 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
         case NSStreamEvent.HasBytesAvailable:
             println("Bytes available event received")
 
-            var maxLen: Int
-            var callback: (Int)->Void
+            var maxLen      : Int
+            var callback    : (Int)->Void
+            var buffer      : UnsafeMutablePointer<UInt8>
             
             if (once){
+                (buffer, maxLen, callback) = self.delegate!.receiveData()
             
-//                (buffer, maxLen, callback) = self.delegate!.receiveData()
-                println("***** TMPGAPNodePacket has a size of \(sizeof(TMPGAPNodePacket))")
-                
-//                var GAPheader = UnsafeMutablePointer<TMPGAPNodePacket>.alloc(1)
-//                GAPheader.initialize(TMPGAPNodePacket())
-                
-                var aux2 = tmpGAPNodePacket.memory
-                
-                buffer = UnsafeMutablePointer<UInt8>.alloc(sizeof(TMPGAPNodePacket))
-                
-                //buffer = UnsafeMutablePointer<UInt8>(tmpGAPNodePacket)
-        
+                var len = inputStream!.read(buffer, maxLength: maxLen)
             
-                var len = inputStream!.read(buffer, maxLength: sizeof(TMPGAPNodePacket))
-//                var len = inputStream!.read(buffer, maxLength: maxLen)
-                
-                var data = NSData(bytes: buffer, length: len)
-                
-                tmpGAPNodePacket = UnsafeMutablePointer<TMPGAPNodePacket>(data.bytes)
-                var aux = tmpGAPNodePacket.memory
-            
-//            callback(len)
-                //self.delegate!.readData(len)
+                callback(len)
             
                 println("GASession> Bytes read: \(len)")
+                
 //                once = false
             }
             
@@ -282,6 +240,8 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
             inputStream!.removeFromRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode)
             inputStream!.close()
         }
+        
+        once = true
 
     }
     
