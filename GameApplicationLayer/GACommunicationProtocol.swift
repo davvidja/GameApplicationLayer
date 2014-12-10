@@ -96,6 +96,8 @@ class GACommunicationProtocol {
     var hdrBuffer       : UnsafeMutablePointer<GAPHeader>?
     var hdr             = GAPHeader()
     
+    var nodePayloadBuffer : UnsafeMutablePointer<GAPNodePayload>?
+    
     
     var msgNode         : GAPNodePacket?
     var msgScene        : GAPScenePacket?
@@ -268,6 +270,9 @@ class GACommunicationProtocol {
 }
 
 
+
+
+
 /*
  * Extension rx Data. It implementes all methods needed to receive the incoming data
  */
@@ -298,6 +303,7 @@ extension GACommunicationProtocol {
     
     //Releasing resources allocated for receiving the GAPHeader
     func releseResourcesForGAPHeaderReception (){
+        println("Releasing resources for GAPHeaderReception")
         
         //releasing memory of the pointer to the GAPHeader
         hdrBuffer!.destroy(1)
@@ -310,19 +316,67 @@ extension GACommunicationProtocol {
         rxMaxLen = 0
     }
     
+    //Preparing the communication protocol for receiving a payload of a NODE protocol primitive
+    func prepareForGAPNodePayloadReception (){
+        //Preparing the suitable reception buffer
+        nodePayloadBuffer = UnsafeMutablePointer<GAPNodePayload>.alloc(1)
+        nodePayloadBuffer!.initialize(GAPNodePayload())
+        
+        rxBuffer = UnsafeMutablePointer<UInt8>(nodePayloadBuffer!)
+        
+        //Setting the maxlength that could be stored in the reception buffered allocated
+        rxMaxLen = sizeof(GAPNodePayload)
+        
+        //Setting the parsing method for the chunck of bits that will be received
+        rxParsingMethod = readGAPNodePayload
+    }
+    
+    //Releasing resources allocated for receiving the GAPHeader
+    func releseResourcesForGAPNodePayloadReception (){
+        println("Releasing resources for GAPNodePayloadReception")
+
+        //releasing memory of the pointer to the GAPHeader
+        nodePayloadBuffer!.destroy(1)
+        nodePayloadBuffer!.dealloc(1)
+        
+        //reception pointer to nil
+        rxBuffer! = nil
+        
+        //setting the maxlength to 0, avoiding to read new data when the memory is not ready
+        rxMaxLen = 0
+    }
+    
     func readGAPHeader(bytesRead: Int){
-        println("GACommunicationProtocol> number of bytes read: \(bytesRead)")
+        println("GACommunicationProtocol (read GAPHeader)> number of bytes read: \(bytesRead)")
         
         if (bytesRead == sizeof(GAPHeader)){
             parseGAPHeader()
             
-            releseResourcesForGAPHeaderReception()
             
         } else {
-            println("GACommunicationProtocol> number of bytes read does not complain with the destination structure. Data will not be parsed")
+            println("GACommunicationProtocol (GAPHeader)> number of bytes read does not complain with the destination structure. Data will not be parsed")
+        }
+    }
+    
+    func readGAPNodePayload(bytesRead: Int){
+        println("GACommunicationProtocol (read GAPNodePayload)> number of bytes read: \(bytesRead)")
+        
+        if (bytesRead == sizeof(GAPNodePayload)){
+//            parseGAPHeader()
+                println("GACommunicationProtocol> parsing GAPNodePayload")
+            releseResourcesForGAPNodePayloadReception()
+            
+        } else {
+            println("GACommunicationProtocol (GAPNodePayload)> number of bytes read does not complain with the destination structure. Data will not be parsed")
         }
     }
 }
+
+
+
+
+
+
 
 /*
 * Extension Parsing rx Data. It implementes all methods needed to parse the received incoming data
@@ -342,7 +396,12 @@ extension GACommunicationProtocol {
         switch (payloadType){
         case CNODE:
             println("GACommunicationProtocol> Payload type NODE")
+            println("GACommunicationProtocol> Preparing the protocol for the reception of the payload")
             
+            releseResourcesForGAPHeaderReception()
+            
+            prepareForGAPNodePayloadReception()
+           
         case CSCENE:
             println("GACommunicationProtocol> Payload type SCENE")
             
@@ -356,4 +415,6 @@ extension GACommunicationProtocol {
             println("GACommunicationProtocol> Payload type unkown")
         }
     }
+    
+
 }
