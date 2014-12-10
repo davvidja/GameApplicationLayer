@@ -90,8 +90,4 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
         return communicationProtocol!.receiveData()
     }
     
-    public func readData(bytesRead: Int){
-        communicationProtocol!.readData(bytesRead)
-    }
-
 }

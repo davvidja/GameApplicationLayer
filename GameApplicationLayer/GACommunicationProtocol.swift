@@ -238,28 +238,7 @@ class GACommunicationProtocol {
         return header.M_PT & hdrMasks.PAYLOAD
     }
     
-    func parseMessage(){
-        var payloadType = self.getPayloadTypeBits(hdrBuffer!.memory)
 
-        switch (payloadType){
-        case CNODE:
-            println("GACommunicationProtocol> Payload type NODE")
-            
-        case CSCENE:
-            println("GACommunicationProtocol> Payload type SCENE")
-
-        case CNODEACTION:
-            println("GACommunicationProtocol> Payload type NODEACTION")
-
-        case CPAUSE:
-            println("GACommunicationProtocol> Payload type PAUSE")
-        
-        default:
-            println("GACommunicationProtocol> Payload type unkown")
-
-        }
-
-    }
     
     func setTimeStamp(inout toByte byte: UInt32){
         var gregorianCalendar = NSCalendar(calendarIdentifier: NSGregorianCalendar)
@@ -284,21 +263,6 @@ class GACommunicationProtocol {
     
     func setSSRC(inout toByte byte: UInt32){
         byte = SSRC
-    }
-    
-    func readData(bytesRead: Int){
-        println("GACommunicationProtocol> number of bytes read: \(bytesRead)")
-        
-        if (bytesRead == sizeof(GAPHeader)){
-            /* Following the next steps
-            *   1. Checking the verion (V) of the protocol. It should comfort of the current implementation
-            *   2. Checking the payload type (PT) for determinig the primitive of the protocol sent
-            *   3. Reading the payload according with the PT sent
-            */
-            self.parseMessage()
-        } else {
-            println("GACommunicationProtocol> number of bytes read does not complain with the destination structure. Data will not be parsed")
-        }
     }
 
 }
@@ -329,7 +293,67 @@ extension GACommunicationProtocol {
         rxMaxLen = sizeof(GAPHeader)
         
         //Setting the parsing method for the chunck of bits that will be received
+        rxParsingMethod = readGAPHeader
+    }
+    
+    //Releasing resources allocated for receiving the GAPHeader
+    func releseResourcesForGAPHeaderReception (){
         
-        rxParsingMethod = readData
+        //releasing memory of the pointer to the GAPHeader
+        hdrBuffer!.destroy(1)
+        hdrBuffer!.dealloc(1)
+        
+        //reception pointer to nil
+        rxBuffer! = nil
+        
+        //setting the maxlength to 0, avoiding to read new data when the memory is not ready
+        rxMaxLen = 0
+    }
+    
+    func readGAPHeader(bytesRead: Int){
+        println("GACommunicationProtocol> number of bytes read: \(bytesRead)")
+        
+        if (bytesRead == sizeof(GAPHeader)){
+            parseGAPHeader()
+            
+            releseResourcesForGAPHeaderReception()
+            
+        } else {
+            println("GACommunicationProtocol> number of bytes read does not complain with the destination structure. Data will not be parsed")
+        }
+    }
+}
+
+/*
+* Extension Parsing rx Data. It implementes all methods needed to parse the received incoming data
+*/
+
+extension GACommunicationProtocol {
+    
+    /* Parsing the GAP Header
+    *  Following the next steps
+    *   1. Checking the verion (V) of the protocol. It should comfort of the current implementation
+    *   2. Checking the payload type (PT) for determinig the primitive of the protocol sent
+    *   3. Reading the payload according with the PT sent
+    */
+    func parseGAPHeader(){
+        var payloadType = self.getPayloadTypeBits(hdrBuffer!.memory)
+        
+        switch (payloadType){
+        case CNODE:
+            println("GACommunicationProtocol> Payload type NODE")
+            
+        case CSCENE:
+            println("GACommunicationProtocol> Payload type SCENE")
+            
+        case CNODEACTION:
+            println("GACommunicationProtocol> Payload type NODEACTION")
+            
+        case CPAUSE:
+            println("GACommunicationProtocol> Payload type PAUSE")
+            
+        default:
+            println("GACommunicationProtocol> Payload type unkown")
+        }
     }
 }

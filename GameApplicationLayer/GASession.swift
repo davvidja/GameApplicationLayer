@@ -13,7 +13,6 @@ import MultipeerConnectivity
 protocol GASessionDelegate {
     func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState)
     func receiveData ()->(UnsafeMutablePointer<UInt8>,Int, (Int)->Void)
-    func readData (bytesRead: Int)
 }
 
 class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
@@ -144,14 +143,19 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
             
             if (once){
                 (buffer, maxLen, callback) = self.delegate!.receiveData()
+                
+                if (maxLen > 0){
             
-                var len = inputStream!.read(buffer, maxLength: maxLen)
+                    var len = inputStream!.read(buffer, maxLength: maxLen)
             
-                callback(len)
-            
-                println("GASession> Bytes read: \(len)")
+                    callback(len)
+                    
+                    println("GASession> Bytes read: \(len)")
                 
 //                once = false
+                } else {
+                    println("GASession> bytes not readed because the maxLen was 0")
+                }
             }
             
             
