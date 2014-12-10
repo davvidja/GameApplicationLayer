@@ -362,10 +362,7 @@ extension GACommunicationProtocol {
         println("GACommunicationProtocol (read GAPNodePayload)> number of bytes read: \(bytesRead)")
         
         if (bytesRead == sizeof(GAPNodePayload)){
-//            parseGAPHeader()
-                println("GACommunicationProtocol> parsing GAPNodePayload")
-            releseResourcesForGAPNodePayloadReception()
-            
+            parseGAPNodePayload()
         } else {
             println("GACommunicationProtocol (GAPNodePayload)> number of bytes read does not complain with the destination structure. Data will not be parsed")
         }
@@ -416,5 +413,11 @@ extension GACommunicationProtocol {
         }
     }
     
-
+    func parseGAPNodePayload(){
+        println("GACommunicationProtocol> parsing GAPNodePayload")
+        
+        releseResourcesForGAPNodePayloadReception()
+        
+        prepareForGAPHeaderReception ()
+    }
 }
