@@ -93,24 +93,23 @@ class GACommunicationProtocol {
 //        }
 //    }
 
-    var hdrBuffer       : UnsafeMutablePointer<GAPHeader>
+    var hdrBuffer       : UnsafeMutablePointer<GAPHeader>?
     var hdr             = GAPHeader()
-    var buffer          = UnsafeMutablePointer<UInt8>()
+    
     
     var msgNode         : GAPNodePacket?
     var msgScene        : GAPScenePacket?
     
+    
+    //Instance properties used in the reception of the next chunck of data
+    var rxBuffer        : UnsafeMutablePointer<UInt8>?
+    var rxMaxLen        : Int = 0
+    var rxParsingMethod : ((Int)->Void)?
+    
     init(){
         SSRC = UInt32(random())
-//        hdrBuffer = UnsafeMutablePointer<UInt8>.alloc(1)
         
-        
-        hdrBuffer = UnsafeMutablePointer<GAPHeader>.alloc(1)
-        hdrBuffer.initialize(GAPHeader())
-        
-        var aux = hdrBuffer.memory
-        
-        println("GACommunicationProtocol> hdrBuffer address: \(hdrBuffer.hashValue)")
+        prepareForGAPHeaderReception()
     }
     
     //This metod creates the message regarding with the protocolo primitive SENDNODE
@@ -240,7 +239,7 @@ class GACommunicationProtocol {
     }
     
     func parseMessage(){
-        var payloadType = self.getPayloadTypeBits(hdrBuffer.memory)
+        var payloadType = self.getPayloadTypeBits(hdrBuffer!.memory)
 
         switch (payloadType){
         case CNODE:
@@ -302,11 +301,35 @@ class GACommunicationProtocol {
         }
     }
 
+}
+
+
+/*
+ * Extension rx Data. It implementes all methods needed to receive the incoming data
+ */
+
+extension GACommunicationProtocol {
     
-    //Method called when bytes are available in the input stream
+    //Method called when bytes are available in the input stream. This method
     func receiveData()->(UnsafeMutablePointer<UInt8>,Int, (Int)->Void){
-        buffer = UnsafeMutablePointer<UInt8>(hdrBuffer)
+        return (rxBuffer!, rxMaxLen,rxParsingMethod!)
+    }
+    
+    
+    //Preparing the communication protocol for receiving a new GAPHeader
+    func prepareForGAPHeaderReception () {
         
-        return (buffer, sizeof(GAPHeader),readData)
+        //Preparing the suitable reception buffer
+        hdrBuffer = UnsafeMutablePointer<GAPHeader>.alloc(1)
+        hdrBuffer!.initialize(GAPHeader())
+        
+        rxBuffer = UnsafeMutablePointer<UInt8>(hdrBuffer!)
+        
+        //Setting the maxlength that could be stored in the reception buffered allocated
+        rxMaxLen = sizeof(GAPHeader)
+        
+        //Setting the parsing method for the chunck of bits that will be received
+        
+        rxParsingMethod = readData
     }
 }
