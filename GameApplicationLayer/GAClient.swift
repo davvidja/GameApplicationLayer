@@ -12,12 +12,12 @@ import MultipeerConnectivity
 public protocol GAClientDelegate {
     func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState)
     func didReceiveScene()
-    func didReceiveNode()
+    func didReceiveNode(node: GAPNode)
     func didReceiveNodeAction()
     func didReceiveGamePause()
 }
 
-public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDelegate {
+public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDelegate, GACommunicationProtocolDelegate {
     
     var myPeerID, nearbyPeerID: MCPeerID?
     var session: GASession?
@@ -25,7 +25,7 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
     var peersBrowser: MCBrowserViewController?
     var communicationProtocol: GACommunicationProtocol?
 
-    public var delegate: GAServerDelegate?
+    public var delegate: GAClientDelegate?
     
     
     public func initGameClient (myPlayerName: String!, serviceType: String = "FreeBall", withAssistant: Bool = true) {
@@ -46,6 +46,8 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
         
         if (communicationProtocol == nil){
             communicationProtocol = GACommunicationProtocol()
+            
+            communicationProtocol!.delegate = self
         }
     }
     
@@ -90,4 +92,20 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
         return communicationProtocol!.receiveData()
     }
     
+}
+
+
+//Extension implementing the GAPCommunicationProtocolDelegate methods
+extension GAClient {
+    func didReceiveNode(nodeId: UInt8) {
+        var node = GAPNode()
+        node.nodeIdentifier = nodeId
+        
+        if (delegate != nil){
+            delegate!.didReceiveNode(node)
+            
+        } else {
+            println("GAClient> no GAClient delegate has been set.")
+        }
+    }
 }

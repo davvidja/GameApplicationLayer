@@ -81,8 +81,14 @@ struct GAPScenePacket {
     var payload = GAPScenePayload()
 }
 
+protocol GACommunicationProtocolDelegate {
+    func didReceiveNode(nodeId: UInt8)
+}
+
 //It has to be decided if it would be an instance of the protocol for each session(network) the peer is connected or for each connection client-server
 class GACommunicationProtocol {
+    var delegate: GACommunicationProtocolDelegate?
+
     var protocolVersion : UInt8 = 1
     let hdrMasks        = GAPHeaderMasks ()
     let payloadTypes    = GAPpayloadTypes ()
@@ -415,6 +421,8 @@ extension GACommunicationProtocol {
     
     func parseGAPNodePayload(){
         println("GACommunicationProtocol> parsing GAPNodePayload")
+        
+        delegate!.didReceiveNode(nodePayloadBuffer!.memory.nodeIdentifier)
         
         releseResourcesForGAPNodePayloadReception()
         
