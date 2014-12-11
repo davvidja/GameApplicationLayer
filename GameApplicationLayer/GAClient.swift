@@ -11,7 +11,7 @@ import MultipeerConnectivity
 
 public protocol GAClientDelegate {
     func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState)
-    func didReceiveScene()
+    func didReceiveScene(scene: GAPScene)
     func didReceiveNode(node: GAPNode)
     func didReceiveNodeAction()
     func didReceiveGamePause()
@@ -105,7 +105,17 @@ extension GAClient {
             delegate!.didReceiveNode(node)
             
         } else {
-            println("GAClient> no GAClient delegate has been set.")
+            println("GAClient> no GAClient´s delegate has been set.")
+        }
+    }
+    
+    func didReceiveScene(scene: GAPScene) {
+        
+        if (delegate != nil){
+            delegate!.didReceiveScene(scene)
+            
+        } else {
+            println("GAClient> no GAClient´s delegate has been set.")
         }
     }
 }

@@ -83,6 +83,7 @@ struct GAPScenePacket {
 
 protocol GACommunicationProtocolDelegate {
     func didReceiveNode(nodeId: UInt8)
+    func didReceiveScene(scene: GAPScene)
 }
 
 //It has to be decided if it would be an instance of the protocol for each session(network) the peer is connected or for each connection client-server
@@ -103,6 +104,7 @@ class GACommunicationProtocol {
     var hdr             = GAPHeader()
     
     var nodePayloadBuffer : UnsafeMutablePointer<GAPNodePayload>?
+    var scenePayloadBuffer: UnsafeMutablePointer<GAPScenePayload>?
     
     
     var msgNode         : GAPNodePacket?
@@ -139,20 +141,14 @@ class GACommunicationProtocol {
     func sendScene(scene: GAPScene) -> (UnsafePointer<UInt8>,Int) {
         msgScene = GAPScenePacket()
         
-        var msgScenePointer = UnsafeMutablePointer<GAPScenePacket>.alloc(1)
-        msgScenePointer.initialize(GAPScenePacket())
-        
-        
-        var buffer = UnsafePointer<UInt8>()
-        
-        self.buildHeader(&msgScenePointer.memory.header, payloadType: payloadTypes.SCENE)
+        self.buildHeader(&msgScene!.header, payloadType: payloadTypes.SCENE)
         
         //Building payload
-        msgScenePointer.memory.payload.sceneIdentifier = scene.sceneIdentifier
+        msgScene!.payload.sceneIdentifier = scene.sceneIdentifier
         
-//        var aux = NSData(bytes: &msgScene!, length: sizeof(GAPScenePacket))
+        var aux = NSData(bytes: &msgScene!, length: sizeof(GAPScenePacket))
         
-        return (UnsafePointer<UInt8>(msgScenePointer), sizeof(GAPScenePacket))
+        return (UnsafePointer<UInt8>(aux.bytes), aux.length)
     }
 
     
@@ -337,6 +333,21 @@ extension GACommunicationProtocol {
         rxParsingMethod = readGAPNodePayload
     }
     
+    //Preparing the communication protocol for receiving a payload of a SCENE protocol primitive
+    func prepareForGAPScenePayloadReception (){
+        //Preparing the suitable reception buffer
+        scenePayloadBuffer = UnsafeMutablePointer<GAPScenePayload>.alloc(1)
+        scenePayloadBuffer!.initialize(GAPScenePayload())
+        
+        rxBuffer = UnsafeMutablePointer<UInt8>(scenePayloadBuffer!)
+        
+        //Setting the maxlength that could be stored in the reception buffered allocated
+        rxMaxLen = sizeof(GAPScenePayload)
+        
+        //Setting the parsing method for the chunck of bits that will be received
+        rxParsingMethod = readGAPScenePayload
+    }
+    
     //Releasing resources allocated for receiving the GAPHeader
     func releseResourcesForGAPNodePayloadReception (){
         println("Releasing resources for GAPNodePayloadReception")
@@ -351,6 +362,23 @@ extension GACommunicationProtocol {
         //setting the maxlength to 0, avoiding to read new data when the memory is not ready
         rxMaxLen = 0
     }
+    
+    
+    //Releasing resources allocated for receiving the GAPHeader
+    func releseResourcesForGAPScenePayloadReception (){
+        println("Releasing resources for GAPNodePayloadReception")
+        
+        //releasing memory of the pointer to the GAPHeader
+        scenePayloadBuffer!.destroy(1)
+        scenePayloadBuffer!.dealloc(1)
+        
+        //reception pointer to nil
+        rxBuffer! = nil
+        
+        //setting the maxlength to 0, avoiding to read new data when the memory is not ready
+        rxMaxLen = 0
+    }
+
     
     func readGAPHeader(bytesRead: Int){
         println("GACommunicationProtocol (read GAPHeader)> number of bytes read: \(bytesRead)")
@@ -373,6 +401,17 @@ extension GACommunicationProtocol {
             println("GACommunicationProtocol (GAPNodePayload)> number of bytes read does not complain with the destination structure. Data will not be parsed")
         }
     }
+    
+    func readGAPScenePayload(bytesRead: Int){
+        println("GACommunicationProtocol (read GAPScenePayload)> number of bytes read: \(bytesRead)")
+        
+        if (bytesRead == sizeof(GAPScenePayload)){
+            parseGAPScenePayload()
+        } else {
+            println("GACommunicationProtocol (GAPScenePayload)> number of bytes read does not complain with the destination structure. Data will not be parsed")
+        }
+    }
+
 }
 
 
@@ -407,6 +446,11 @@ extension GACommunicationProtocol {
            
         case CSCENE:
             println("GACommunicationProtocol> Payload type SCENE")
+            println("GACommunicationProtocol> Preparing the protocol for the reception of the payload")
+            
+            releseResourcesForGAPHeaderReception()
+            
+            prepareForGAPScenePayloadReception()
             
         case CNODEACTION:
             println("GACommunicationProtocol> Payload type NODEACTION")
@@ -425,6 +469,16 @@ extension GACommunicationProtocol {
         delegate!.didReceiveNode(nodePayloadBuffer!.memory.nodeIdentifier)
         
         releseResourcesForGAPNodePayloadReception()
+        
+        prepareForGAPHeaderReception ()
+    }
+    
+    func parseGAPScenePayload(){
+        println("GACommunicationProtocol> parsing GAPScenePayload")
+        
+        delegate!.didReceiveScene(GAPScene(identifier: nodePayloadBuffer!.memory.nodeIdentifier))
+        
+        releseResourcesForGAPScenePayloadReception()
         
         prepareForGAPHeaderReception ()
     }

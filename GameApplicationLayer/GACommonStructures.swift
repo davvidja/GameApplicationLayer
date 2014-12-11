@@ -31,6 +31,10 @@ public struct GAPNode {
     public init(){
         nodeIdentifier = 0
     }
+    
+    public init(identifier: UInt8){
+        nodeIdentifier = identifier
+    }
 }
 
 public struct GAPScene {
@@ -38,6 +42,10 @@ public struct GAPScene {
     
     public init(){
         sceneIdentifier = 0
+    }
+    
+    public init(identifier: UInt8){
+        sceneIdentifier = identifier
     }
 }
 

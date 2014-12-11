@@ -45,6 +45,18 @@ public class GAServer: NSObject, GASessionDelegate {
         }
     }
     
+    
+    public func receiveData ()->(UnsafeMutablePointer<UInt8>,Int,(Int)->Void){
+        return communicationProtocol!.receiveData()
+    }
+}
+
+
+/*
+* Server control interface methods for management of the Server, provided to the upper layer in the network architecture
+*/
+
+extension GAServer {
     public func startGameServer () {
         adverstiserAssistant!.start()
     }
@@ -53,8 +65,28 @@ public class GAServer: NSObject, GASessionDelegate {
         session!.disconnect()
         adverstiserAssistant!.stop()
     }
-    
-    
+}
+
+
+/*
+* Uplink method, to propagate the connection state of a peer player from the bottom layers to the upper layers in the network architecture
+*/
+
+extension GAServer{
+    //Methods of the GASessionDelegate protocol
+    func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState){
+        println("GAServer> Player \(peerPlayer) change state to \(GAPlayerConnectionState.stringForPeerConnectionState(newState) )")
+        
+        delegate!.player(peerPlayer: peerPlayer, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateConnected)
+    }
+}
+
+
+/*
+* Downlink interface methods for the transmition of information provided to the upper layer in the network architecture
+*/
+
+extension GAServer {
     public func sendScene (scene: GAPScene) {
         var buffer: UnsafePointer<UInt8>
         var bufferSize: Int
@@ -76,15 +108,5 @@ public class GAServer: NSObject, GASessionDelegate {
     public func sendGamePause () {
         
     }
-    
-    //Methods of the GASessionDelegate protocol
-    func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState){
-        println("GAServer> Player \(peerPlayer) change state to \(GAPlayerConnectionState.stringForPeerConnectionState(newState) )")
-        
-        delegate!.player(peerPlayer: peerPlayer, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateConnected)
-    }
-    
-    public func receiveData ()->(UnsafeMutablePointer<UInt8>,Int,(Int)->Void){
-        return communicationProtocol!.receiveData()
-    }
 }
+
