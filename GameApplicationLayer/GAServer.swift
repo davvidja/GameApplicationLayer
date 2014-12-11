@@ -101,8 +101,11 @@ extension GAServer {
         session!.writeOutputStream(buffer, maxLength: bufferSize)
     }
     
-    public func sendNodeAction () {
-        
+    public func sendNodeAction (nodeaction: GAPNodeAction) {
+        var buffer: UnsafePointer<UInt8>
+        var bufferSize: Int
+        (buffer, bufferSize) = communicationProtocol!.sendNodeAction(nodeaction)
+        session!.writeOutputStream(buffer, maxLength: bufferSize)
     }
     
     public func sendGamePause () {

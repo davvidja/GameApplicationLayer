@@ -81,6 +81,11 @@ struct GAPScenePacket {
     var payload = GAPScenePayload()
 }
 
+struct GAPNodeactionPacket {
+    var header  = GAPHeader()
+    var payload = GAPNodeactionPayload()
+}
+
 protocol GACommunicationProtocolDelegate {
     func didReceiveNode(nodeId: UInt8)
     func didReceiveScene(scene: GAPScene)
@@ -109,6 +114,7 @@ class GACommunicationProtocol {
     
     var msgNode         : GAPNodePacket?
     var msgScene        : GAPScenePacket?
+    var msgNodeaction   : GAPNodeactionPacket?
     
     
     //Instance properties used in the reception of the next chunck of data
@@ -148,6 +154,21 @@ class GACommunicationProtocol {
         
         var aux = NSData(bytes: &msgScene!, length: sizeof(GAPScenePacket))
         
+        return (UnsafePointer<UInt8>(aux.bytes), aux.length)
+    }
+    
+    
+    //Creates the message regarding with the protocol primitive NODEACTION
+    func sendNodeAction(nodeAction: GAPNodeAction) -> (UnsafePointer<UInt8>,Int) {
+        msgNodeaction = GAPNodeactionPacket()
+        
+        self.buildHeader(&msgNodeaction!.header, payloadType: payloadTypes.NODEACTION)
+        
+        //Building payload
+        msgNodeaction!.payload.nodeIdentifier = nodeAction.nodeIdentifier
+        
+        var aux = NSData(bytes: &msgNodeaction!, length: sizeof(GAPNodeactionPacket))
+
         return (UnsafePointer<UInt8>(aux.bytes), aux.length)
     }
 

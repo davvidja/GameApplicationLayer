@@ -47,5 +47,16 @@ public struct GAPScene {
     public init(identifier: UInt8){
         sceneIdentifier = identifier
     }
+    
+}
+
+public struct GAPNodeAction {
+    public var nodeIdentifier   : UInt8 = 0
+    var startPoint              = ScenePoint()
+    var speed                   : Float32 = 0.0
+    var direction               = Vector3D()
+    
+    public init(){
+    }
 }
 
