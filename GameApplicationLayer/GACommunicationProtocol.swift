@@ -39,6 +39,10 @@ public struct ScenePoint {
             println("ScenePoint structure> error in the initialization of the ScenePoint. The number of input parameters is different than 3")
         }
     }
+    
+    public func getCoordinates() -> Array<Int16>{
+        return [x,y,z]
+    }
 }
 
 //Bit masks used to get information stored in a lower level than the byte.
@@ -100,6 +104,7 @@ struct GAPNodeactionPacket {
 protocol GACommunicationProtocolDelegate {
     func didReceiveNode(nodeId: UInt8)
     func didReceiveScene(scene: GAPScene)
+    func didReceiveNodeaction(nodeaction: GAPNodeAction)
 }
 
 //It has to be decided if it would be an instance of the protocol for each session(network) the peer is connected or for each connection client-server
@@ -566,8 +571,16 @@ extension GACommunicationProtocol {
         println("GACommunicationProtocol> parsing GAPNodeactionPayload, X = \(nodeactionPayloadBuffer!.memory.startPoint.x)")
         println("GACommunicationProtocol> parsing GAPNodeactionPayload, Y = \(nodeactionPayloadBuffer!.memory.startPoint.y)")
         println("GACommunicationProtocol> parsing GAPNodeactionPayload, Z = \(nodeactionPayloadBuffer!.memory.startPoint.z)")
+        
+        var aux = GAPNodeAction()
+        
+        aux.nodeIdentifier = nodeactionPayloadBuffer!.memory.nodeIdentifier
+        
+        aux.startPoint.x = nodeactionPayloadBuffer!.memory.startPoint.x
+        aux.startPoint.y = nodeactionPayloadBuffer!.memory.startPoint.y
+        aux.startPoint.z = nodeactionPayloadBuffer!.memory.startPoint.z
        
-        //delegate!.didReceiveScene(GAPScene(identifier: nodePayloadBuffer!.memory.nodeIdentifier))
+        delegate!.didReceiveNodeaction(aux)
         
         releseResourcesForGAPNodeactionPayloadReception()
         

@@ -13,11 +13,11 @@ public protocol GAClientDelegate {
     func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState)
     func didReceiveScene(scene: GAPScene)
     func didReceiveNode(node: GAPNode)
-    func didReceiveNodeAction()
+    func didReceiveNodeAction(nodeaction: GAPNodeAction)
     func didReceiveGamePause()
 }
 
-public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDelegate, GACommunicationProtocolDelegate {
+public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDelegate {
     
     var myPeerID, nearbyPeerID: MCPeerID?
     var session: GASession?
@@ -96,7 +96,7 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
 
 
 //Extension implementing the GAPCommunicationProtocolDelegate methods
-extension GAClient {
+extension GAClient: GACommunicationProtocolDelegate {
     func didReceiveNode(nodeId: UInt8) {
         var node = GAPNode()
         node.nodeIdentifier = nodeId
@@ -113,6 +113,16 @@ extension GAClient {
         
         if (delegate != nil){
             delegate!.didReceiveScene(scene)
+            
+        } else {
+            println("GAClient> no GAClient´s delegate has been set.")
+        }
+    }
+    
+    func didReceiveNodeaction(nodeaction: GAPNodeAction) {
+        
+        if (delegate != nil){
+            delegate!.didReceiveNodeAction(nodeaction)
             
         } else {
             println("GAClient> no GAClient´s delegate has been set.")
