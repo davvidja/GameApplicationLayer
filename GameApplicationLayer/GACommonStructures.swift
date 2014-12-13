@@ -53,8 +53,8 @@ public struct GAPScene {
 public struct GAPNodeAction {
     public var nodeIdentifier   : UInt16 = 0
     public var startPoint       = ScenePoint(coordinates: [0,0,0])
-    var speed                   : Float32 = 0.0
-    var direction               = Vector3D()
+    public var speed                   : Float32 = 0.0
+    public var direction               = Vector3D(vectorComponents: [0,0,0])
     
     public init(){
     }

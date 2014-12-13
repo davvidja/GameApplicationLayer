@@ -8,9 +8,6 @@
 
 import Foundation
 
-//Packet structure 1035 bytes
-// - Header: 11 bytes
-// - Payload: maximun of 1024 bytes
 
 let CSCENE       : UInt8 = 1
 let CNODE        : UInt8 = 2
@@ -18,10 +15,25 @@ let CNODEACTION  : UInt8 = 3
 let CPAUSE       : UInt8 = 4
 
 
-struct Vector3D {
+public struct Vector3D {
     var dx: Int16 = 0
     var dy: Int16 = 0
     var dz: Int16 = 0
+    
+    public init(vectorComponents: Array<Int16>){
+        if (vectorComponents.count == 3){
+            dx = vectorComponents[0]
+            dy = vectorComponents[1]
+            dz = vectorComponents[2]
+        }
+        else {
+            println("Vector structure> error in the initialization of the Vector3D. The number of input parameters is different than 3")
+        }
+    }
+    
+    public func getVectorComponents() -> Array<Int16>{
+        return [dx,dy,dz]
+    }
 }
 
 public struct ScenePoint {
@@ -83,7 +95,7 @@ struct GAPNodeactionPayload {
     var nodeIdentifier  : UInt16 = 0
     var startPoint      = ScenePoint(coordinates: [0,0,0])
     var speed           : Float32 = 0.0
-    var direction       = Vector3D()
+    var direction       = Vector3D(vectorComponents: [0,0,0])
 }
 
 struct GAPNodePacket {
@@ -184,6 +196,8 @@ class GACommunicationProtocol {
         //Building payload
         msgNodeaction!.payload.nodeIdentifier = UInt16(nodeAction.nodeIdentifier)
         msgNodeaction!.payload.startPoint = nodeAction.startPoint
+        msgNodeaction!.payload.direction = nodeAction.direction
+        msgNodeaction!.payload.speed = nodeAction.speed
         
         var aux = NSData(bytes: &msgNodeaction!, length: sizeof(GAPNodeactionPacket))
 
@@ -568,9 +582,9 @@ extension GACommunicationProtocol {
     
     func parseGAPNodeactionPayload(){
         println("GACommunicationProtocol> parsing GAPNodeactionPayload, node identifier \(nodeactionPayloadBuffer!.memory.nodeIdentifier)")
-        println("GACommunicationProtocol> parsing GAPNodeactionPayload, X = \(nodeactionPayloadBuffer!.memory.startPoint.x)")
-        println("GACommunicationProtocol> parsing GAPNodeactionPayload, Y = \(nodeactionPayloadBuffer!.memory.startPoint.y)")
-        println("GACommunicationProtocol> parsing GAPNodeactionPayload, Z = \(nodeactionPayloadBuffer!.memory.startPoint.z)")
+        println("GACommunicationProtocol> parsing GAPNodeactionPayload, dx = \(nodeactionPayloadBuffer!.memory.direction.dx)")
+        println("GACommunicationProtocol> parsing GAPNodeactionPayload, dy = \(nodeactionPayloadBuffer!.memory.direction.dy)")
+        println("GACommunicationProtocol> parsing GAPNodeactionPayload, dz = \(nodeactionPayloadBuffer!.memory.direction.dz)")
         
         var aux = GAPNodeAction()
         
@@ -579,7 +593,13 @@ extension GACommunicationProtocol {
         aux.startPoint.x = nodeactionPayloadBuffer!.memory.startPoint.x
         aux.startPoint.y = nodeactionPayloadBuffer!.memory.startPoint.y
         aux.startPoint.z = nodeactionPayloadBuffer!.memory.startPoint.z
-       
+        
+        aux.direction.dx = nodeactionPayloadBuffer!.memory.direction.dx
+        aux.direction.dy = nodeactionPayloadBuffer!.memory.direction.dy
+        aux.direction.dz = nodeactionPayloadBuffer!.memory.direction.dz
+        
+        aux.speed = nodeactionPayloadBuffer!.memory.speed
+      
         delegate!.didReceiveNodeaction(aux)
         
         releseResourcesForGAPNodeactionPayloadReception()
