@@ -109,7 +109,10 @@ extension GAServer {
     }
     
     public func sendGamePause () {
-        
+        var buffer: UnsafePointer<UInt8>
+        var bufferSize: Int
+        (buffer, bufferSize) = communicationProtocol!.sendPause()
+        session!.writeOutputStream(buffer, maxLength: bufferSize)
     }
 }
 

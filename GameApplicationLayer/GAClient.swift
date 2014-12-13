@@ -128,4 +128,13 @@ extension GAClient: GACommunicationProtocolDelegate {
             println("GAClient> no GAClient´s delegate has been set.")
         }
     }
+    
+    func didReceivePause() {
+        if (delegate != nil){
+            delegate!.didReceiveGamePause()
+            
+        } else {
+            println("GAClient> no GAClient´s delegate has been set.")
+        }
+    }
 }

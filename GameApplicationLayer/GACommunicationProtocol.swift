@@ -113,10 +113,15 @@ struct GAPNodeactionPacket {
     var payload = GAPNodeactionPayload()
 }
 
+struct GAPPausePacket {
+    var header  = GAPHeader()
+}
+
 protocol GACommunicationProtocolDelegate {
     func didReceiveNode(nodeId: UInt8)
     func didReceiveScene(scene: GAPScene)
     func didReceiveNodeaction(nodeaction: GAPNodeAction)
+    func didReceivePause()
 }
 
 //It has to be decided if it would be an instance of the protocol for each session(network) the peer is connected or for each connection client-server
@@ -144,6 +149,7 @@ class GACommunicationProtocol {
     var msgNode         : GAPNodePacket?
     var msgScene        : GAPScenePacket?
     var msgNodeaction   : GAPNodeactionPacket?
+    var msgPause        : GAPPausePacket?
     
     
     //Instance properties used in the reception of the next chunck of data
@@ -203,6 +209,19 @@ class GACommunicationProtocol {
 
         return (UnsafePointer<UInt8>(aux.bytes), aux.length)
     }
+    
+    //Creates the message regarding with the protocol primitive PAUSE
+    func sendPause() -> (UnsafePointer<UInt8>,Int) {
+        
+        msgPause = GAPPausePacket()
+        
+        self.buildHeader(&msgPause!.header, payloadType: payloadTypes.PAUSE)
+        
+        var aux = NSData(bytes: &msgPause!, length: sizeof(GAPPausePacket))
+        
+        return (UnsafePointer<UInt8>(aux.bytes), aux.length)
+    }
+
 
     
     func buildHeader (inout header: GAPHeader, payloadType: UInt8){
@@ -554,6 +573,8 @@ extension GACommunicationProtocol {
             
         case CPAUSE:
             println("GACommunicationProtocol> Payload type PAUSE")
+            
+            delegate!.didReceivePause()
             
         default:
             println("GACommunicationProtocol> Payload type unkown")
