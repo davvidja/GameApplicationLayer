@@ -52,7 +52,7 @@ public struct GAPScene {
 
 public struct GAPNodeAction {
     public var nodeIdentifier   : UInt8 = 0
-    var startPoint              = ScenePoint()
+    public var startPoint       = ScenePoint(coordinates: [0,0,0])
     var speed                   : Float32 = 0.0
     var direction               = Vector3D()
     

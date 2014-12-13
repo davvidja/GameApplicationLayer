@@ -24,10 +24,21 @@ struct Vector3D {
     var dz: Int16 = 0
 }
 
-struct ScenePoint {
+public struct ScenePoint {
     var x: Int16 = 0
     var y: Int16 = 0
     var z: Int16 = 0
+    
+    public init(coordinates: Array<Int16>){
+        if (coordinates.count == 3){
+            x = coordinates[0]
+            y = coordinates[1]
+            z = coordinates[2]
+        }
+        else {
+            println("ScenePoint structure> error in the initialization of the ScenePoint. The number of input parameters is different than 3")
+        }
+    }
 }
 
 //Bit masks used to get information stored in a lower level than the byte.
@@ -66,7 +77,7 @@ struct GAPNodePayload {
 
 struct GAPNodeactionPayload {
     var nodeIdentifier  : UInt16 = 0
-    var startPoint      = ScenePoint()
+    var startPoint      = ScenePoint(coordinates: [0,0,0])
     var speed           : Float32 = 0.0
     var direction       = Vector3D()
 }
