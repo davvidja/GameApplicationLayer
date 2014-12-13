@@ -178,6 +178,7 @@ class GACommunicationProtocol {
         
         //Building payload
         msgNodeaction!.payload.nodeIdentifier = UInt16(nodeAction.nodeIdentifier)
+        msgNodeaction!.payload.startPoint = nodeAction.startPoint
         
         var aux = NSData(bytes: &msgNodeaction!, length: sizeof(GAPNodeactionPacket))
 
@@ -562,7 +563,10 @@ extension GACommunicationProtocol {
     
     func parseGAPNodeactionPayload(){
         println("GACommunicationProtocol> parsing GAPNodeactionPayload, node identifier \(nodeactionPayloadBuffer!.memory.nodeIdentifier)")
-        
+        println("GACommunicationProtocol> parsing GAPNodeactionPayload, X = \(nodeactionPayloadBuffer!.memory.startPoint.x)")
+        println("GACommunicationProtocol> parsing GAPNodeactionPayload, Y = \(nodeactionPayloadBuffer!.memory.startPoint.y)")
+        println("GACommunicationProtocol> parsing GAPNodeactionPayload, Z = \(nodeactionPayloadBuffer!.memory.startPoint.z)")
+       
         //delegate!.didReceiveScene(GAPScene(identifier: nodePayloadBuffer!.memory.nodeIdentifier))
         
         releseResourcesForGAPNodeactionPayloadReception()
