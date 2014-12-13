@@ -65,7 +65,7 @@ struct GAPNodePayload {
 }
 
 struct GAPNodeactionPayload {
-    var nodeIdentifier  : UInt8 = 0
+    var nodeIdentifier  : UInt16 = 0
     var startPoint      = ScenePoint()
     var speed           : Float32 = 0.0
     var direction       = Vector3D()
@@ -110,7 +110,8 @@ class GACommunicationProtocol {
     
     var nodePayloadBuffer : UnsafeMutablePointer<GAPNodePayload>?
     var scenePayloadBuffer: UnsafeMutablePointer<GAPScenePayload>?
-    
+    var nodeactionPayloadBuffer: UnsafeMutablePointer<GAPNodeactionPayload>?
+
     
     var msgNode         : GAPNodePacket?
     var msgScene        : GAPScenePacket?
@@ -165,7 +166,7 @@ class GACommunicationProtocol {
         self.buildHeader(&msgNodeaction!.header, payloadType: payloadTypes.NODEACTION)
         
         //Building payload
-        msgNodeaction!.payload.nodeIdentifier = nodeAction.nodeIdentifier
+        msgNodeaction!.payload.nodeIdentifier = UInt16(nodeAction.nodeIdentifier)
         
         var aux = NSData(bytes: &msgNodeaction!, length: sizeof(GAPNodeactionPacket))
 
@@ -324,21 +325,6 @@ extension GACommunicationProtocol {
         rxParsingMethod = readGAPHeader
     }
     
-    //Releasing resources allocated for receiving the GAPHeader
-    func releseResourcesForGAPHeaderReception (){
-        println("Releasing resources for GAPHeaderReception")
-        
-        //releasing memory of the pointer to the GAPHeader
-        hdrBuffer!.destroy(1)
-        hdrBuffer!.dealloc(1)
-        
-        //reception pointer to nil
-        rxBuffer! = nil
-        
-        //setting the maxlength to 0, avoiding to read new data when the memory is not ready
-        rxMaxLen = 0
-    }
-    
     //Preparing the communication protocol for receiving a payload of a NODE protocol primitive
     func prepareForGAPNodePayloadReception (){
         //Preparing the suitable reception buffer
@@ -369,7 +355,37 @@ extension GACommunicationProtocol {
         rxParsingMethod = readGAPScenePayload
     }
     
+    //Preparing the communication protocol for receiving a payload of a SCENE protocol primitive
+    func prepareForGAPNodeactionPayloadReception (){
+        //Preparing the suitable reception buffer
+        nodeactionPayloadBuffer = UnsafeMutablePointer<GAPNodeactionPayload>.alloc(1)
+        nodeactionPayloadBuffer!.initialize(GAPNodeactionPayload())
+        
+        rxBuffer = UnsafeMutablePointer<UInt8>(nodeactionPayloadBuffer!)
+        
+        //Setting the maxlength that could be stored in the reception buffered allocated
+        rxMaxLen = sizeof(GAPNodeactionPayload)
+        
+        //Setting the parsing method for the chunck of bits that will be received
+        rxParsingMethod = readGAPNodeactionPayload
+    }
+    
     //Releasing resources allocated for receiving the GAPHeader
+    func releseResourcesForGAPHeaderReception (){
+        println("Releasing resources for GAPHeaderReception")
+        
+        //releasing memory of the pointer to the GAPHeader
+        hdrBuffer!.destroy(1)
+        hdrBuffer!.dealloc(1)
+        
+        //reception pointer to nil
+        rxBuffer! = nil
+        
+        //setting the maxlength to 0, avoiding to read new data when the memory is not ready
+        rxMaxLen = 0
+    }
+    
+    //Releasing resources allocated for receiving the GAPNodePayload
     func releseResourcesForGAPNodePayloadReception (){
         println("Releasing resources for GAPNodePayloadReception")
 
@@ -385,7 +401,7 @@ extension GACommunicationProtocol {
     }
     
     
-    //Releasing resources allocated for receiving the GAPHeader
+    //Releasing resources allocated for receiving the GAPScenePayload
     func releseResourcesForGAPScenePayloadReception (){
         println("Releasing resources for GAPNodePayloadReception")
         
@@ -400,6 +416,20 @@ extension GACommunicationProtocol {
         rxMaxLen = 0
     }
 
+    //Releasing resources allocated for receiving the GAPNodeactionPayload
+    func releseResourcesForGAPNodeactionPayloadReception (){
+        println("Releasing resources for GAPNodeactionPayloadReception")
+        
+        //releasing memory of the pointer to the GAPHeader
+        nodeactionPayloadBuffer!.destroy(1)
+        nodeactionPayloadBuffer!.dealloc(1)
+        
+        //reception pointer to nil
+        rxBuffer! = nil
+        
+        //setting the maxlength to 0, avoiding to read new data when the memory is not ready
+        rxMaxLen = 0
+    }
     
     func readGAPHeader(bytesRead: Int){
         println("GACommunicationProtocol (read GAPHeader)> number of bytes read: \(bytesRead)")
@@ -433,6 +463,16 @@ extension GACommunicationProtocol {
         }
     }
 
+    func readGAPNodeactionPayload(bytesRead: Int){
+        println("GACommunicationProtocol (read GAPNodeactionPayload)> number of bytes read: \(bytesRead)")
+        
+        if (bytesRead == sizeof(GAPNodeactionPayload)){
+            parseGAPNodeactionPayload()
+        } else {
+            println("GACommunicationProtocol (GAPNodeactionPayload)> number of bytes read does not complain with the destination structure. Data will not be parsed")
+        }
+    }
+    
 }
 
 
@@ -475,6 +515,11 @@ extension GACommunicationProtocol {
             
         case CNODEACTION:
             println("GACommunicationProtocol> Payload type NODEACTION")
+            println("GACommunicationProtocol> Preparing the protocol for the reception of the payload")
+
+            releseResourcesForGAPHeaderReception()
+
+            prepareForGAPNodeactionPayloadReception()
             
         case CPAUSE:
             println("GACommunicationProtocol> Payload type PAUSE")
@@ -497,10 +542,21 @@ extension GACommunicationProtocol {
     func parseGAPScenePayload(){
         println("GACommunicationProtocol> parsing GAPScenePayload")
         
-        delegate!.didReceiveScene(GAPScene(identifier: nodePayloadBuffer!.memory.nodeIdentifier))
+        delegate!.didReceiveScene(GAPScene(identifier: scenePayloadBuffer!.memory.sceneIdentifier))
         
         releseResourcesForGAPScenePayloadReception()
         
         prepareForGAPHeaderReception ()
     }
+    
+    func parseGAPNodeactionPayload(){
+        println("GACommunicationProtocol> parsing GAPNodeactionPayload, node identifier \(nodeactionPayloadBuffer!.memory.nodeIdentifier)")
+        
+        //delegate!.didReceiveScene(GAPScene(identifier: nodePayloadBuffer!.memory.nodeIdentifier))
+        
+        releseResourcesForGAPNodeactionPayloadReception()
+        
+        prepareForGAPHeaderReception ()
+    }
+
 }
