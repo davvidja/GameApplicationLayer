@@ -17,11 +17,10 @@ public protocol GAClientDelegate {
     func didReceiveGamePause()
 }
 
-public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDelegate {
+public class GAClient: NSObject, MCBrowserViewControllerDelegate {
     
     var myPeerID, nearbyPeerID: MCPeerID?
     var session: GASession?
-    var adverstiserAssistant: MCAdvertiserAssistant?
     var peersBrowser: MCBrowserViewController?
     var communicationProtocol: GACommunicationProtocol?
 
@@ -29,25 +28,9 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
     
     
     public func initGameClient (myPlayerName: String!, serviceType: String = "FreeBall", withAssistant: Bool = true) {
-        if (myPeerID == nil){
-            myPeerID = MCPeerID(displayName: myPlayerName)
-        }
-        
-        if (session == nil){
-            session = GASession(peer: myPeerID!)
-            session!.delegate = self
-        }
-        
         if(peersBrowser == nil){
             peersBrowser = MCBrowserViewController(serviceType: serviceType, session: session!.session)
             peersBrowser!.delegate = self
-        }
-        
-        
-        if (communicationProtocol == nil){
-            communicationProtocol = GACommunicationProtocol()
-            
-            communicationProtocol!.delegate = self
         }
     }
     
@@ -59,12 +42,13 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
         session!.disconnect()
     }
     
-
+}
     
 
     
-    //** Methods of the MCBrowserViewControllerDelegate protocol **//
-    
+/** Methods of the MCBrowserViewControllerDelegate protocol **/
+
+extension GAClient: MCBrowserViewControllerDelegate {
     // Notifies the delegate, when the user taps the done button
     public func browserViewControllerDidFinish(browserViewController: MCBrowserViewController!){
         browserViewController.dismissViewControllerAnimated(true, completion: nil)
@@ -79,62 +63,6 @@ public class GAClient: NSObject, MCBrowserViewControllerDelegate, GASessionDeleg
     public func browserViewController(browserViewController: MCBrowserViewController!, shouldPresentNearbyPeer peerID: MCPeerID!, withDiscoveryInfo info: [NSObject : AnyObject]!) ->Bool{
         return true
     }
-    
-    
-    //Methods of the GASessionDelegate protocol
-    func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState){
-        println("GAClient> Player \(peerPlayer) change estate to \(GAPlayerConnectionState.stringForPeerConnectionState(newState) )")
-        
-        delegate!.player(peerPlayer: peerPlayer, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateConnected)
-    }
-    
-    public func receiveData ()->(UnsafeMutablePointer<UInt8>,Int, (Int)->Void){
-        return communicationProtocol!.receiveData()
-    }
-    
 }
 
 
-//Extension implementing the GAPCommunicationProtocolDelegate methods
-extension GAClient: GACommunicationProtocolDelegate {
-    func didReceiveNode(nodeId: UInt8) {
-        var node = GAPNode()
-        node.nodeIdentifier = nodeId
-        
-        if (delegate != nil){
-            delegate!.didReceiveNode(node)
-            
-        } else {
-            println("GAClient> no GAClient´s delegate has been set.")
-        }
-    }
-    
-    func didReceiveScene(scene: GAPScene) {
-        
-        if (delegate != nil){
-            delegate!.didReceiveScene(scene)
-            
-        } else {
-            println("GAClient> no GAClient´s delegate has been set.")
-        }
-    }
-    
-    func didReceiveNodeaction(nodeaction: GAPNodeAction) {
-        
-        if (delegate != nil){
-            delegate!.didReceiveNodeAction(nodeaction)
-            
-        } else {
-            println("GAClient> no GAClient´s delegate has been set.")
-        }
-    }
-    
-    func didReceivePause() {
-        if (delegate != nil){
-            delegate!.didReceiveGamePause()
-            
-        } else {
-            println("GAClient> no GAClient´s delegate has been set.")
-        }
-    }
-}

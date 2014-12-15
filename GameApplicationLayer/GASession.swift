@@ -10,8 +10,9 @@ import Foundation
 import MultipeerConnectivity
 
 
-protocol GASessionDelegate {
-    func player(#peerPlayer: String!, didChangeStateTo newState: GAPlayerConnectionState)
+
+
+protocol GASessionDataRxDelegate{
     func receiveData ()->(UnsafeMutablePointer<UInt8>,Int, (Int)->Void)
 }
 
@@ -24,7 +25,10 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
     var outputStreamStarted, inputStreamReceived: Bool
     var outputStreamOpenCompleted, inputStreamOpenCompleted: Bool
     var outputStreamHasSpaceAvailable: Bool
-    var delegate: GASessionDelegate?
+    
+    var sessionConnectionDelegate: GASessionConnectionDelegate?
+    var dataRxDelegate: GASessionDataRxDelegate?
+    
     var buffer = UnsafeMutablePointer<UInt8>()
     
     var once: Bool
@@ -131,7 +135,7 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
             
             //Checking if both, input and output streams are already open. In that case, the upper layer of the network arquitecture will be notified.
             if (inputStreamOpenCompleted && outputStreamOpenCompleted){
-                delegate!.player(peerPlayer: nearbyPeerID!.displayName, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateConnected)
+                sessionConnectionDelegate!.player(peerPlayer: nearbyPeerID!.displayName, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateConnected)
             }
             
         case NSStreamEvent.HasBytesAvailable:
@@ -142,7 +146,7 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
             var buffer      : UnsafeMutablePointer<UInt8>
             
             if (once){
-                (buffer, maxLen, callback) = self.delegate!.receiveData()
+                (buffer, maxLen, callback) = dataRxDelegate!.receiveData()
                 
                 if (maxLen > 0){
             
@@ -167,7 +171,7 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
         case NSStreamEvent.EndEncountered:
             println("End encountered event received")
             
-            delegate!.player(peerPlayer: nearbyPeerID?.displayName, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateNotConnected)
+            sessionConnectionDelegate!.player(peerPlayer: nearbyPeerID?.displayName, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateNotConnected)
             
             
             if (aStream == outputStream!){
@@ -181,7 +185,7 @@ class GASession: NSObject, NSStreamDelegate, MCSessionDelegate {
         case NSStreamEvent.ErrorOccurred:
             println("Error ocurred event received")
             
-            delegate!.player(peerPlayer: nearbyPeerID?.displayName, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateNotConnected)
+            sessionConnectionDelegate!.player(peerPlayer: nearbyPeerID?.displayName, didChangeStateTo: GAPlayerConnectionState.GAPlayerConnectionStateNotConnected)
             
             
             if (aStream == outputStream!){
